@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agenda de Compromissos</title>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{--laranja:#f97316;--laranja-esc:#ea580c;--bg:#f7f7f8;--borda:#e5e7eb;--txt:#1f2937;--txt2:#6b7280}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:14px}
+  input,select,textarea{font-family:inherit;font-size:14px}
+
+  #telaLogin{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fff7ed,#f7f7f8);z-index:200}
+  .login-box{background:#fff;padding:36px 32px;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.08);width:340px}
+  .login-box h1{font-size:20px;margin-bottom:4px}
+  .login-box p{color:var(--txt2);font-size:13px;margin-bottom:22px}
+  .campo{margin-bottom:14px}
+  .campo label{display:block;font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.03em}
+  .campo input,.campo select,.campo textarea{width:100%;padding:10px 12px;border:1px solid var(--borda);border-radius:8px;outline:none;background:#fff}
+  .campo input:focus,.campo select:focus,.campo textarea:focus{border-color:var(--laranja);box-shadow:0 0 0 3px rgba(249,115,22,.12)}
+  .btn-laranja{width:100%;background:var(--laranja);color:#fff;padding:11px;border-radius:8px;font-weight:600}
+  .btn-laranja:hover{background:var(--laranja-esc)}
+  .erro{color:#dc2626;font-size:13px;margin-top:10px;min-height:18px}
+
+  #app{display:none;height:100vh;flex-direction:column}
+  header{background:#fff;border-bottom:1px solid var(--borda);padding:10px 18px;display:flex;align-items:center;gap:16px}
+  .busca{flex:1;max-width:420px;position:relative}
+  .busca input{width:100%;padding:9px 12px 9px 34px;border:1px solid var(--borda);border-radius:20px;background:var(--bg);outline:none}
+  .busca span{position:absolute;left:12px;top:8px;color:var(--txt2)}
+  .user-info{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--laranja);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  .btn-sair{color:var(--txt2);font-size:13px;padding:6px 10px;border-radius:6px}
+  .btn-sair:hover{background:var(--bg)}
+  .corpo{display:flex;flex:1;overflow:hidden}
+
+  aside{width:260px;background:#fff;border-right:1px solid var(--borda);padding:14px;overflow-y:auto;flex-shrink:0}
+  .btn-novo{width:100%;background:var(--laranja);color:#fff;padding:10px;border-radius:8px;font-weight:600;margin-bottom:16px}
+  .btn-novo:hover{background:var(--laranja-esc)}
+  .mini-cal{margin-bottom:18px}
+  .mini-cal .topo{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:600;font-size:13px}
+  .mini-cal .topo button{color:var(--txt2);padding:2px 6px;border-radius:4px}
+  .mini-cal .topo button:hover{background:var(--bg)}
+  .dias-sem{display:grid;grid-template-columns:repeat(7,1fr);font-size:11px;color:var(--txt2);text-align:center;margin-bottom:4px}
+  .dias{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+  .dias button{aspect-ratio:1;border-radius:50%;font-size:12px;color:var(--txt);display:flex;align-items:center;justify-content:center}
+  .dias button:hover{background:var(--bg)}
+  .dias button.hoje{background:var(--laranja);color:#fff;font-weight:700}
+  .dias button.sel{outline:2px solid var(--laranja);outline-offset:-2px}
+  .dias button.vazio{visibility:hidden}
+
+  .sec-tit{font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+  .btn-add-mini{color:var(--laranja);font-size:18px;line-height:1;padding:0 4px}
+  .btn-todos{font-size:10px;font-weight:700;color:var(--laranja-esc);background:#fff7ed;border:1px solid #fed7aa;border-radius:5px;padding:3px 7px;text-transform:uppercase;letter-spacing:.03em}
+  .btn-todos:hover{background:#ffedd5}
+  .btn-todos.ativo{background:var(--laranja);color:#fff;border-color:var(--laranja)}
+
+  .prof-item{display:flex;align-items:center;gap:8px;padding:7px 6px;border-radius:6px;font-size:13px}
+  .prof-item:hover{background:var(--bg)}
+  .prof-item input[type=checkbox]{accent-color:var(--laranja);cursor:pointer;flex-shrink:0}
+  .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .prof-item .nome{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;padding:2px 0}
+  .prof-item .nome:hover{color:var(--laranja-esc)}
+  .prof-item .setor{font-size:11px;color:var(--txt2)}
+  .btn-del{color:#d1d5db;font-size:14px;padding:0 2px;flex-shrink:0}
+  .btn-del:hover{color:#dc2626}
+
+  main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  .toolbar{background:#fff;border-bottom:1px solid var(--borda);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .nav-data{display:flex;align-items:center;gap:4px}
+  .nav-data button{padding:6px 10px;border-radius:6px;border:1px solid var(--borda);color:var(--txt)}
+  .nav-data button:hover{background:var(--bg)}
+  .data-titulo{font-weight:600;font-size:15px;margin:0 8px;text-transform:capitalize}
+  .seg{display:flex;border:1px solid var(--borda);border-radius:6px;overflow:hidden}
+  .seg button{padding:6px 14px;color:var(--txt2)}
+  .seg button.ativo{background:var(--laranja);color:#fff;font-weight:600}
+  .spacer{flex:1}
+
+  .grade-wrap{flex:1;overflow:auto;background:#fff}
+  .grade{display:grid;min-width:max-content}
+  .grade .cab{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--borda)}
+  .col-prof{padding:10px 8px;text-align:center;border-left:1px solid var(--borda);font-size:12px}
+  .col-prof .n{font-weight:600;font-size:13px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .col-prof .c{color:var(--txt2);font-size:11px}
+  .col-hora{display:flex;align-items:center;justify-content:center;color:var(--txt2);font-size:11px;font-weight:600}
+  .col-hora-vazia{width:64px}
+  .cel{height:44px;border-left:1px solid var(--borda);border-bottom:1px solid #f1f2f4;position:relative;cursor:pointer}
+  .cel:hover{background:#fff7ed}
+  .cel.hora{border-bottom:1px solid var(--borda);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--txt2);background:#fafafa;cursor:default}
+  .cel.hora:hover{background:#fafafa}
+  .evento{position:absolute;left:1px;right:1px;border-radius:5px;padding:3px 5px;font-size:11px;color:#fff;overflow:hidden;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.15);z-index:2;transition:box-shadow .12s,filter .12s}
+  .evento:hover{box-shadow:0 3px 10px rgba(0,0,0,.28);filter:brightness(1.06);z-index:6}
+  .evento .t{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:12px}
+  .evento .p{font-size:10px;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+  .evento .pr{font-size:10px;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;font-style:italic}
+  .evento .h{opacity:.85;font-size:10px}
+  .evento .lapis{position:absolute;top:3px;right:3px;font-size:10px;opacity:0;transition:.12s}
+  .evento:hover .lapis{opacity:.9}
+  .vazio-msg{padding:40px;text-align:center;color:var(--txt2)}
+
+  .painel-proj{width:270px;background:#fff;border-left:1px solid var(--borda);padding:14px;overflow-y:auto;flex-shrink:0;transition:width .2s,padding .2s}
+  .painel-proj.recolhido{width:44px;padding:14px 6px;overflow:hidden}
+  .painel-proj.recolhido .sec-tit span,
+  .painel-proj.recolhido .btn-add-mini,
+  .painel-proj.recolhido #filtroProjAviso,
+  .painel-proj.recolhido #listaProj{display:none}
+  .painel-proj.recolhido .sec-tit{justify-content:center;margin-bottom:0}
+  .painel-proj.recolhido .btn-toggle-proj{transform:rotate(180deg)}
+  .sec-tit .btn-toggle-proj{color:var(--txt2);font-size:13px;padding:0 4px;line-height:1;transition:transform .2s}
+  .sec-tit .btn-toggle-proj:hover{color:var(--laranja)}
+  .sec-tit .acoes{display:flex;align-items:center;gap:2px}
+
+  .proj-card{border-radius:10px;padding:10px 12px;margin-bottom:9px;color:#fff;position:relative;box-shadow:0 1px 4px rgba(0,0,0,.12);cursor:pointer;transition:.15s}
+  .proj-card:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.18)}
+  .proj-card .pn{font-weight:700;font-size:13px;margin-bottom:3px;padding-right:18px;word-break:break-word}
+  .proj-card .pl{font-size:11px;opacity:.95;margin-top:2px;display:flex;gap:4px}
+  .proj-card .pl b{font-weight:600}
+  .proj-card .x{position:absolute;top:6px;right:8px;color:rgba(255,255,255,.75);font-size:15px;line-height:1}
+  .proj-card .x:hover{color:#fff}
+  .proj-vazio{font-size:12px;color:#9ca3af;padding:8px 4px;line-height:1.5}
+  .filtro-aviso{font-size:11px;color:var(--laranja-esc);background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:6px 8px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+  .filtro-aviso button{color:var(--laranja-esc);font-size:11px;font-weight:700;text-decoration:underline;flex-shrink:0}
+
+  .overlay{position:fixed;inset:0;background:rgba(17,24,39,.45);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
+  .overlay.aberto{display:flex}
+  .modal{background:#fff;border-radius:14px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+  .modal-topo{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid var(--borda)}
+  .modal-topo h2{font-size:17px}
+  .fechar{font-size:22px;color:var(--txt2);line-height:1;padding:0 4px}
+  .fechar:hover{color:var(--txt)}
+  .modal-corpo{padding:18px 22px}
+  .modal-rodape{padding:14px 22px;border-top:1px solid var(--borda);display:flex;justify-content:space-between;gap:10px;align-items:center}
+  .btn-cinza{padding:10px 18px;border:1px solid var(--borda);border-radius:8px;color:var(--txt);background:#fff}
+  .btn-cinza:hover{background:var(--bg)}
+  .btn-conf{padding:10px 18px;background:var(--laranja);color:#fff;border-radius:8px;font-weight:600}
+  .btn-conf:hover{background:var(--laranja-esc)}
+  .btn-excluir{padding:10px 18px;background:#fff;color:#dc2626;border:1px solid #fecaca;border-radius:8px;font-weight:600;display:flex;align-items:center;gap:6px}
+  .btn-excluir:hover{background:#fef2f2;border-color:#fca5a5}
+  .tabs{display:flex;gap:6px;margin-bottom:16px}
+  .tabs button{flex:1;padding:9px;border-radius:8px;border:1px solid var(--borda);color:var(--txt2);font-weight:600}
+  .tabs button.ativo{background:#fff7ed;border-color:var(--laranja);color:var(--laranja-esc)}
+  .radios{display:flex;gap:18px;margin-bottom:10px}
+  .radios label{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+  .radios input{accent-color:var(--laranja)}
+  .horarios{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:170px;overflow-y:auto;padding:2px}
+  .horarios button{padding:7px;border:1px solid var(--borda);border-radius:6px;font-size:12px;color:var(--txt)}
+  .horarios button:hover{border-color:var(--laranja)}
+  .horarios button.ativo{background:var(--laranja);color:#fff;border-color:var(--laranja);font-weight:600}
+  .horarios button.ocupado{background:#fee2e2;color:#b91c1c;border-color:#fecaca;cursor:not-allowed}
+  .contador-horarios{font-size:12px;color:var(--laranja-esc);font-weight:600;margin-top:8px;min-height:16px}
+  .check{display:flex;align-items:center;gap:8px;font-size:13px;margin-top:10px;cursor:pointer}
+  .check input{accent-color:var(--laranja)}
+  .cores{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  .cores button{width:30px;height:30px;border-radius:50%;border:3px solid transparent}
+  .cores button.sel{border-color:#111827}
+
+  .lista-proj-sel{max-height:150px;overflow-y:auto;border:1px solid var(--borda);border-radius:8px;padding:6px}
+  .proj-opt{display:flex;align-items:center;gap:8px;padding:7px 6px;border-radius:6px;font-size:13px;cursor:pointer}
+  .proj-opt:hover{background:var(--bg)}
+  .proj-opt input{accent-color:var(--laranja);cursor:pointer}
+  .proj-opt .pnome{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .proj-opt .pent{font-size:11px;color:var(--txt2)}
+  .sem-proj{font-size:12px;color:#9ca3af;padding:8px 6px}
+  .aviso-proj{font-size:11px;color:var(--txt2);margin-top:6px}
+
+  .auditoria{background:#f9fafb;border:1px solid var(--borda);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--txt2);line-height:1.6;margin-top:4px}
+  .auditoria b{color:var(--txt);font-weight:600}
+  .auditoria .linha{display:flex;gap:6px;align-items:baseline}
+</style>
+</head>
+<body>
+
+<div id="telaLogin">
+  <form class="login-box" id="formLogin">
+    <h1>Agenda</h1>
+    <p>Acesse com seu usuário e senha</p>
+    <div class="campo"><label>Usuário</label><input id="inUsuario" autocomplete="username" required /></div>
+    <div class="campo"><label>Senha</label><input id="inSenha" type="password" autocomplete="current-password" required /></div>
+    <button class="btn-laranja" type="submit">Entrar</button>
+    <div class="erro" id="erroLogin"></div>
+  </form>
+</div>
+
+<div id="app">
+  <header>
+    <div class="busca"><span>🔍</span><input id="busca" placeholder="Encontre compromissos ou profissionais" /></div>
+    <div class="user-info">
+      <div class="avatar" id="avatarUser">A</div>
+      <span id="nomeUser">Usuário</span>
+      <button class="btn-sair" id="btnSair">Sair</button>
+    </div>
+  </header>
+
+  <div class="corpo">
+    <aside>
+      <button class="btn-novo" id="btnNovo">＋ Novo</button>
+      <div class="mini-cal">
+        <div class="topo"><button id="mesAnt">‹</button><span id="mesTitulo"></span><button id="mesProx">›</button></div>
+        <div class="dias-sem"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
+        <div class="dias" id="diasMini"></div>
+      </div>
+      <div class="sec-tit">
+        <span>Profissionais</span>
+        <div style="display:flex;align-items:center;gap:4px">
+          <button class="btn-todos" id="btnTodosProf" title="Selecionar todos">Todos</button>
+          <button class="btn-add-mini" id="btnAddProf" title="Cadastrar profissional">＋</button>
+        </div>
+      </div>
+      <div id="listaProf"></div>
+    </aside>
+
+    <main>
+      <div class="toolbar">
+        <div class="nav-data">
+          <button id="diaAnt">‹</button>
+          <button id="btnHoje">Hoje</button>
+          <button id="diaProx">›</button>
+        </div>
+        <span class="data-titulo" id="dataTitulo"></span>
+        <div class="seg">
+          <button data-view="dia" class="ativo">Dia</button>
+          <button data-view="semana">Semana</button>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn-cinza" id="btnAtualizar">↻ Atualizar</button>
+      </div>
+      <div class="grade-wrap"><div class="grade" id="grade"></div></div>
+    </main>
+
+    <div class="painel-proj" id="painelProj">
+      <div class="sec-tit">
+        <span>Projetos</span>
+        <div class="acoes">
+          <button class="btn-add-mini" id="btnAddProj" title="Cadastrar projeto">＋</button>
+          <button class="btn-toggle-proj" id="btnToggleProj" title="Esconder/mostrar projetos">❯</button>
+        </div>
+      </div>
+      <div id="filtroProjAviso"></div>
+      <div id="listaProj"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modalComp">
+  <div class="modal">
+    <div class="modal-topo"><h2 id="tituloModalComp">Novo compromisso</h2><button class="fechar" data-fechar>×</button></div>
+    <div class="modal-corpo">
+      <div class="tabs">
+        <button type="button" class="ativo">Compromisso</button>
+        <button type="button" disabled style="opacity:.45;cursor:not-allowed">Consulta</button>
+      </div>
+      <div class="campo"><label>Nome do compromisso</label><input id="cTitulo" placeholder="Ex.: Reunião de setor" /></div>
+      <div class="campo">
+        <label>Profissional</label>
+        <div class="radios">
+          <label><input type="radio" name="tipoProf" value="prof" checked /> Profissional</label>
+          <label><input type="radio" name="tipoProf" value="clinica" /> Clínica</label>
+        </div>
+        <select id="cProf"></select>
+      </div>
+      <div class="campo">
+        <label>Projeto <span style="text-transform:none;font-weight:400;color:#9ca3af">(opcional)</span></label>
+        <div class="lista-proj-sel" id="cProjetos"></div>
+        <div class="aviso-proj">Deixe todos desmarcados para um compromisso sem projeto.</div>
+      </div>
+      <div class="campo"><label>Observações</label><textarea id="cObs" rows="3" placeholder="Anotações do compromisso"></textarea></div>
+      <div class="campo">
+        <label>Data</label>
+        <input type="date" id="cData" />
+        <label class="check"><input type="checkbox" id="cDiaInteiro" /> Dia inteiro</label>
+      </div>
+      <div class="campo" id="blocoHorario">
+        <label>Horário <span style="text-transform:none;font-weight:400;color:#9ca3af">(clique no início e no fim para preencher o intervalo)</span></label>
+        <div class="horarios" id="cHorarios"></div>
+        <div class="contador-horarios" id="contadorHorarios"></div>
+      </div>
+      <div class="campo" id="blocoAuditoriaComp" style="display:none">
+        <label>Registro</label>
+        <div class="auditoria" id="auditoriaComp"></div>
+      </div>
+    </div>
+    <div class="modal-rodape">
+      <button class="btn-excluir" id="btnExcluirComp" style="display:none">🗑 Excluir compromisso</button>
+      <div style="display:flex;gap:10px;margin-left:auto">
+        <button class="btn-cinza" data-fechar>Cancelar</button>
+        <button class="btn-conf" id="btnSalvarComp">Confirmar compromisso</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modalProf">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-topo"><h2>Cadastrar profissional</h2><button class="fechar" data-fechar>×</button></div>
+    <div class="modal-corpo">
+      <div class="campo"><label>Nome</label><input id="pNome" placeholder="Ex.: Dr. Bartolomeu Albuquerque" /></div>
+      <div class="campo"><label>Setor</label><input id="pSetor" placeholder="Ex.: Clínica Geral" /></div>
+      <div class="campo"><label>Cor de identificação na agenda</label><div class="cores" id="pCores"></div></div>
+    </div>
+    <div class="modal-rodape">
+      <div style="display:flex;gap:10px;margin-left:auto">
+        <button class="btn-cinza" data-fechar>Cancelar</button>
+        <button class="btn-conf" id="btnSalvarProf">Salvar profissional</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modalProj">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-topo"><h2 id="tituloModalProj">Cadastrar projeto</h2><button class="fechar" data-fechar>×</button></div>
+    <div class="modal-corpo">
+      <div class="campo"><label>Nome do projeto</label><input id="jNome" placeholder="Ex.: Campanha de Novembro" /></div>
+      <div class="campo">
+        <label>Responsáveis</label>
+        <div class="lista-proj-sel" id="jResponsaveis"></div>
+        <div class="aviso-proj">Marque os profissionais responsáveis por este projeto.</div>
+      </div>
+      <div class="campo"><label>Data de entrega</label><input type="date" id="jEntrega" /></div>
+      <div class="campo"><label>Cor do card</label><div class="cores" id="jCores"></div></div>
+      <div class="campo" id="blocoAuditoriaProj" style="display:none">
+        <label>Registro</label>
+        <div class="auditoria" id="auditoriaProj"></div>
+      </div>
+    </div>
+    <div class="modal-rodape">
+      <button class="btn-excluir" id="btnExcluirProj" style="display:none">🗑 Excluir projeto</button>
+      <div style="display:flex;gap:10px;margin-left:auto">
+        <button class="btn-cinza" data-fechar>Cancelar</button>
+        <button class="btn-conf" id="btnSalvarProj">Salvar projeto</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CFG = window.AGENDA_CONFIG || {};
+const db = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+
+const HORAS = [];
+for (let h = 8; h <= 18; h++) {
+  for (let m = 0; m < 60; m += 15) {
+    if (h === 18 && m > 0) break;
+    HORAS.push(String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'));
+  }
+}
+const ALTURA_CEL = 44;
+const CORES = ['#3b82f6','#6b7280','#15803d','#8b5cf6','#ec4899','#22c55e','#eab308','#a78bfa','#f97316','#0ea5e9','#ef4444','#14b8a6'];
+const CORES_PROJ = ['#8b5cf6','#6366f1','#0ea5e9','#14b8a6','#22c55e','#eab308','#f97316','#ef4444','#ec4899','#64748b'];
+
+let estado = {
+  usuario: null, profissionais: [], compromissos: [], projetos: [],
+  dataSel: new Date(), mesMini: new Date(), visao: 'dia',
+  corSel: CORES[0], corProjSel: CORES_PROJ[0],
+  horasSel: [], projetosSel: [], responsaveisSel: [],
+  editando: null, editandoProj: null,
+  painelRecolhido: false,
+  profsMarcados: []
+};
+
+let ultimoClique = null;
+
+const $ = s => document.querySelector(s);
+const pad = n => String(n).padStart(2,'0');
+const iso = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+const parseISO = s => { const [a,m,d] = s.split('-').map(Number); return new Date(a, m-1, d); };
+const DIAS = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+function horasDoCompromisso(c){
+  if (Array.isArray(c.horarios) && c.horarios.length) return [...c.horarios].sort();
+  if (c.hora) return [c.hora];
+  return [];
+}
+function projetoDoCompromisso(c){
+  if (!c.projeto_id) return null;
+  return estado.projetos.find(p => p.id === c.projeto_id) || null;
+}
+
+function nomeUsuarioLogado(){
+  if (!estado.usuario) return 'Desconhecido';
+  return estado.usuario.nome || estado.usuario.usuario;
+}
+
+function formatarDataHora(s){
+  if (!s) return '';
+  const d = new Date(s);
+  return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + '/' + d.getFullYear() +
+         ' às ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
+function htmlAuditoria(reg){
+  const criadoPor = reg.criado_por || '—';
+  const criadoEm = reg.criado_em_por ? formatarDataHora(reg.criado_em_por) : (reg.criado_em ? formatarDataHora(reg.criado_em) : '');
+  const alteradoPor = reg.alterado_por;
+  const alteradoEm = reg.alterado_em ? formatarDataHora(reg.alterado_em) : '';
+
+  let html = `<div class="linha"><b>Criado por:</b> ${esc(criadoPor)}${criadoEm ? ' · ' + criadoEm : ''}</div>`;
+  if (alteradoPor){
+    html += `<div class="linha"><b>Última alteração:</b> ${esc(alteradoPor)}${alteradoEm ? ' · ' + alteradoEm : ''}</div>`;
+  }
+  return html;
+}
+
+$('#formLogin').addEventListener('submit', async e => {
+  e.preventDefault();
+  const erro = $('#erroLogin');
+  erro.textContent = '';
+  const { data, error } = await db.rpc('login_usuario', {
+    p_usuario: $('#inUsuario').value.trim(),
+    p_senha: $('#inSenha').value
+  });
+  if (error) { erro.textContent = 'Erro ao conectar: ' + error.message; return; }
+  if (!data || data.length === 0) { erro.textContent = 'Usuário ou senha inválidos.'; return; }
+  estado.usuario = data[0];
+  sessionStorage.setItem('agenda_user', JSON.stringify(data[0]));
+  entrarNoApp();
+});
+
+$('#btnSair').addEventListener('click', () => {
+  sessionStorage.removeItem('agenda_user');
+  estado.usuario = null;
+  $('#app').style.display = 'none';
+  $('#telaLogin').style.display = 'flex';
+  $('#inSenha').value = '';
+});
+
+function entrarNoApp(){
+  $('#telaLogin').style.display = 'none';
+  $('#app').style.display = 'flex';
+  const nome = estado.usuario.nome || estado.usuario.usuario;
+  $('#nomeUser').textContent = nome;
+  $('#avatarUser').textContent = nome.charAt(0).toUpperCase();
+  carregarTudo();
+}
+
+async function carregarTudo(){
+  await carregarProfissionais();
+  await carregarProjetos();
+  await carregarCompromissos();
+  renderTudo();
+}
+async function carregarProfissionais(){
+  const { data, error } = await db.from('profissionais').select('*').eq('ativo', true).order('nome');
+  if (error) { console.error(error); return; }
+  estado.profissionais = data || [];
+  // por padrão todos marcados
+  estado.profsMarcados = estado.profissionais.map(p => p.id);
+}
+async function carregarProjetos(){
+  const { data, error } = await db.from('projetos').select('*').eq('ativo', true);
+  if (error) { console.error(error); return; }
+  estado.projetos = data || [];
+}
+async function carregarCompromissos(){
+  const { data, error } = await db.from('compromissos').select('*');
+  if (error) { console.error(error); return; }
+  estado.compromissos = data || [];
+}
+
+function renderTudo(){
+  renderMiniCal(); renderListaProf(); renderListaProj(); renderToolbar(); renderGrade();
+  renderSelectProf(); renderCores(); renderCoresProj();
+  renderProjetosChecklist(); renderResponsaveisChecklist(); renderHorarios();
+}
+
+function renderToolbar(){
+  const d = estado.dataSel;
+  if (estado.visao === 'dia'){
+    $('#dataTitulo').textContent = DIAS[d.getDay()] + ', ' + pad(d.getDate()) + ' de ' + MESES[d.getMonth()] + ' de ' + d.getFullYear();
+  } else {
+    const ini = inicioSemana(d), fim = new Date(ini); fim.setDate(fim.getDate()+6);
+    $('#dataTitulo').textContent = pad(ini.getDate()) + ' ' + MESES[ini.getMonth()].slice(0,3) + ' – ' + pad(fim.getDate()) + ' ' + MESES[fim.getMonth()].slice(0,3) + ' ' + fim.getFullYear();
+  }
+}
+function inicioSemana(d){ const x = new Date(d); x.setDate(x.getDate() - x.getDay()); return x; }
+
+function renderMiniCal(){
+  const m = estado.mesMini;
+  $('#mesTitulo').textContent = MESES[m.getMonth()] + ' ' + m.getFullYear();
+  const primeiro = new Date(m.getFullYear(), m.getMonth(), 1);
+  const ultimoDia = new Date(m.getFullYear(), m.getMonth()+1, 0).getDate();
+  const hoje = new Date();
+  let html = '';
+  for (let i = 0; i < primeiro.getDay(); i++) html += '<button class="vazio"></button>';
+  for (let d = 1; d <= ultimoDia; d++){
+    const dt = new Date(m.getFullYear(), m.getMonth(), d);
+    const cls = [];
+    if (iso(dt) === iso(hoje)) cls.push('hoje');
+    if (iso(dt) === iso(estado.dataSel)) cls.push('sel');
+    html += '<button class="' + cls.join(' ') + '" data-dia="' + iso(dt) + '">' + d + '</button>';
+  }
+  $('#diasMini').innerHTML = html;
+  $('#diasMini').querySelectorAll('[data-dia]').forEach(b => {
+    b.onclick = () => { estado.dataSel = parseISO(b.dataset.dia); renderTudo(); };
+  });
+}
+
+function renderListaProf(){
+  const box = $('#listaProf');
+  if (estado.profissionais.length === 0){
+    box.innerHTML = '<div style="font-size:12px;color:#9ca3af;padding:8px 6px">Nenhum profissional cadastrado.</div>';
+    atualizarBotaoTodos();
+    return;
+  }
+  box.innerHTML = estado.profissionais.map(p => {
+    const marcado = estado.profsMarcados.includes(p.id);
+    return `
+    <div class="prof-item">
+      <input type="checkbox" ${marcado?'checked':''} data-filtro="${p.id}" />
+      <span class="dot" style="background:${p.cor}"></span>
+      <div class="nome" data-nomeprof="${p.id}" title="Clique para ver só este">${esc(p.nome)}<div class="setor">${esc(p.setor || 'Sem setor')}</div></div>
+      <button class="btn-del" data-del="${p.id}" title="Remover">×</button>
+    </div>`;
+  }).join('');
+
+  box.querySelectorAll('[data-filtro]').forEach(c => {
+    c.onchange = () => {
+      const id = c.dataset.filtro;
+      if (c.checked){
+        if (!estado.profsMarcados.includes(id)) estado.profsMarcados.push(id);
+      } else {
+        estado.profsMarcados = estado.profsMarcados.filter(x => x !== id);
+      }
+      renderListaProf(); renderGrade(); renderListaProj();
+    };
+  });
+
+  // clique no nome: seleciona só ele
+  box.querySelectorAll('[data-nomeprof]').forEach(el => {
+    el.onclick = () => {
+      const id = el.dataset.nomeprof;
+      estado.profsMarcados = [id];
+      renderListaProf(); renderGrade(); renderListaProj();
+    };
+  });
+
+  box.querySelectorAll('[data-del]').forEach(b => {
+    b.onclick = async () => {
+      if (!confirm('Remover este profissional e todos os seus compromissos?')) return;
+      await db.from('profissionais').update({ ativo: false }).eq('id', b.dataset.del);
+      await carregarTudo();
+    };
+  });
+
+  atualizarBotaoTodos();
+}
+
+function atualizarBotaoTodos(){
+  const btn = $('#btnTodosProf');
+  const todos = estado.profissionais.length > 0 && estado.profsMarcados.length === estado.profissionais.length;
+  btn.classList.toggle('ativo', todos);
+}
+
+$('#btnTodosProf').onclick = () => {
+  estado.profsMarcados = estado.profissionais.map(p => p.id);
+  renderListaProf(); renderGrade(); renderListaProj();
+};
+
+function profissionaisMarcados(){
+  return estado.profsMarcados;
+}
+
+function projetosOrdenados(lista){
+  return [...lista].sort((a, b) => {
+    const da = a.entrega ? new Date(a.entrega + 'T00:00:00').getTime() : null;
+    const db_ = b.entrega ? new Date(b.entrega + 'T00:00:00').getTime() : null;
+    if (da === null && db_ === null) return (a.nome || '').localeCompare(b.nome || '');
+    if (da === null) return 1;
+    if (db_ === null) return -1;
+    if (db_ !== da) return db_ - da;
+    return (a.nome || '').localeCompare(b.nome || '');
+  });
+}
+
+function projetosVisiveis(){
+  const marcados = profissionaisMarcados();
+  let base = estado.projetos;
+
+  if (marcados.length > 0 && marcados.length < estado.profissionais.length){
+    const nomes = estado.profissionais
+      .filter(p => marcados.includes(p.id))
+      .map(p => p.nome);
+
+    base = estado.projetos.filter(proj => {
+      const resp = (proj.responsaveis || '').split(',').map(s => s.trim()).filter(Boolean);
+      return resp.some(n => nomes.includes(n));
+    });
+  }
+
+  return projetosOrdenados(base);
+}
+
+function renderListaProj(){
+  const box = $('#listaProj');
+  const aviso = $('#filtroProjAviso');
+  const lista = projetosVisiveis();
+
+  const marcados = profissionaisMarcados();
+  const filtrando = marcados.length > 0 && marcados.length < estado.profissionais.length;
+
+  if (filtrando){
+    const nomes = estado.profissionais.filter(p => marcados.includes(p.id)).map(p => p.nome).join(', ');
+    aviso.innerHTML = `<div class="filtro-aviso"><span>Mostrando projetos de: <b>${esc(nomes)}</b></span><button id="limparFiltroProj">ver todos</button></div>`;
+    const btn = $('#limparFiltroProj');
+    if (btn) btn.onclick = () => {
+      estado.profsMarcados = estado.profissionais.map(p => p.id);
+      renderListaProf(); renderGrade(); renderListaProj();
+    };
+  } else {
+    aviso.innerHTML = '';
+  }
+
+  if (lista.length === 0){
+    box.innerHTML = '<div class="proj-vazio">' +
+      (filtrando ? 'Nenhum projeto vinculado a este profissional.' : 'Nenhum projeto cadastrado. Clique no + para criar.') +
+      '</div>';
+    return;
+  }
+
+  box.innerHTML = lista.map(p => {
+    const entrega = p.entrega ? formatarData(p.entrega) : 'Sem data';
+    return `<div class="proj-card" style="background:${p.cor}" data-editproj="${p.id}" title="Clique para editar">
+      <button class="x" data-delproj="${p.id}" title="Remover">×</button>
+      <div class="pn">${esc(p.nome)}</div>
+      <div class="pl"><b>Resp.:</b> ${esc(p.responsaveis || '—')}</div>
+      <div class="pl"><b>Entrega:</b> ${entrega}</div>
+      <div class="pl" style="opacity:.8;font-size:10px;margin-top:4px"><b>Por:</b> ${esc(p.criado_por || '—')}</div>
+    </div>`;
+  }).join('');
+
+  box.querySelectorAll('[data-editproj]').forEach(card => {
+    card.onclick = e => {
+      if (e.target.closest('[data-delproj]')) return;
+      const proj = estado.projetos.find(x => x.id === card.dataset.editproj);
+      if (proj) abrirModalProj(proj);
+    };
+  });
+
+  box.querySelectorAll('[data-delproj]').forEach(b => {
+    b.onclick = async e => {
+      e.stopPropagation();
+      if (!confirm('Remover este projeto? Os compromissos ficarão sem projeto.')) return;
+      await db.from('projetos').update({ ativo: false }).eq('id', b.dataset.delproj);
+      await carregarTudo();
+    };
+  });
+}
+
+function formatarData(s){
+  const d = parseISO(s);
+  return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + '/' + d.getFullYear();
+}
+
+function profissionaisVisiveis(){
+  const marcados = profissionaisMarcados();
+  if (marcados.length === 0) return estado.profissionais;
+  return estado.profissionais.filter(p => marcados.includes(p.id));
+}
+
+function renderGrade(){
+  const grade = $('#grade');
+  const profs = profissionaisVisiveis();
+  if (profs.length === 0){
+    grade.style.gridTemplateColumns = '1fr';
+    grade.innerHTML = '<div class="vazio-msg">Selecione um profissional para ver a agenda.</div>';
+    return;
+  }
+  if (estado.visao === 'dia') renderGradeDia(grade, profs);
+  else renderGradeSemana(grade, profs);
+}
+
+function calcularColunas(comps){
+  if (comps.length === 0) return [];
+
+  const itens = comps.map(c => {
+    const hs = horasDoCompromisso(c);
+    const ini = c.dia_inteiro ? 0 : Math.max(0, HORAS.indexOf(hs[0] || HORAS[0]));
+    const fim = c.dia_inteiro ? HORAS.length : ini + Math.max(1, hs.length);
+    return { comp: c, ini, fim, coluna: 0, totalColunas: 1 };
+  }).sort((a, b) => a.ini - b.ini || b.fim - a.fim);
+
+  let grupo = [];
+  let fimGrupo = -1;
+
+  const fecharGrupo = () => {
+    if (grupo.length === 0) return;
+    const colunas = [];
+    grupo.forEach(it => {
+      let col = 0;
+      while (colunas[col] !== undefined && colunas[col] > it.ini) col++;
+      colunas[col] = it.fim;
+      it.coluna = col;
+    });
+    const total = colunas.length;
+    grupo.forEach(it => { it.totalColunas = total; });
+    grupo = [];
+    fimGrupo = -1;
+  };
+
+  itens.forEach(it => {
+    if (grupo.length > 0 && it.ini >= fimGrupo){
+      fecharGrupo();
+    }
+    grupo.push(it);
+    fimGrupo = Math.max(fimGrupo, it.fim);
+  });
+  fecharGrupo();
+
+  return itens;
+}
+
+function posicionarEvento(el, it){
+  const total = it.totalColunas;
+  const col = it.coluna;
+  const larguraPct = 100 / total;
+  const gap = 1;
+
+  el.style.left = `calc(${col * larguraPct}% + ${gap}px)`;
+  el.style.width = `calc(${larguraPct}% - ${gap * 2}px)`;
+  el.style.right = 'auto';
+}
+
+function renderGradeDia(grade, profs){
+  grade.style.gridTemplateColumns = '64px repeat(' + profs.length + ', minmax(150px, 1fr))';
+  let html = '<div class="cab col-hora-vazia"></div>';
+  profs.forEach(p => {
+    const qtd = estado.compromissos.filter(c => c.profissional_id === p.id && c.data === iso(estado.dataSel)).length;
+    html += `<div class="cab col-prof"><div class="n" style="color:${p.cor}">${esc(p.nome)}</div><div class="c">Compromissos: ${qtd}</div></div>`;
+  });
+  HORAS.forEach(h => {
+    html += `<div class="cel hora">${h}</div>`;
+    profs.forEach(p => { html += `<div class="cel" data-hora="${h}" data-prof="${p.id}"></div>`; });
+  });
+  grade.innerHTML = html;
+
+  profs.forEach(p => {
+    const doDia = estado.compromissos.filter(c => c.profissional_id === p.id && c.data === iso(estado.dataSel));
+    const itens = calcularColunas(doDia);
+
+    itens.forEach(it => {
+      const c = it.comp;
+      const hs = horasDoCompromisso(c);
+      const inicioHora = c.dia_inteiro ? HORAS[0] : (hs[0] || HORAS[0]);
+      const altura = (it.fim - it.ini) * ALTURA_CEL;
+      const cel = grade.querySelector(`.cel[data-hora="${inicioHora}"][data-prof="${p.id}"]`);
+      if (!cel) return;
+      const el = criarEvento(c, p, altura, hs);
+      posicionarEvento(el, it);
+      cel.appendChild(el);
+    });
+  });
+
+  grade.querySelectorAll('.cel[data-hora]').forEach(cel => {
+    cel.onclick = e => {
+      if (e.target.closest('.evento')) return;
+      abrirModalComp(null, cel.dataset.prof, cel.dataset.hora);
+    };
+  });
+}
+
+function renderGradeSemana(grade, profs){
+  const ini = inicioSemana(estado.dataSel);
+  const dias = [];
+  for (let i = 0; i < 7; i++){ const d = new Date(ini); d.setDate(d.getDate()+i); dias.push(d); }
+  grade.style.gridTemplateColumns = '64px repeat(7, minmax(130px, 1fr))';
+  let html = '<div class="cab col-hora-vazia"></div>';
+  dias.forEach(d => {
+    const hoje = iso(d) === iso(new Date());
+    html += `<div class="cab col-prof" style="${hoje?'background:#fff7ed':''}"><div class="n">${DIAS[d.getDay()].slice(0,3)}</div><div class="c">${pad(d.getDate())}/${pad(d.getMonth()+1)}</div></div>`;
+  });
+  HORAS.forEach(h => {
+    html += `<div class="cel hora">${h}</div>`;
+    dias.forEach(d => { html += `<div class="cel" data-hora="${h}" data-data="${iso(d)}"></div>`; });
+  });
+  grade.innerHTML = html;
+
+  dias.forEach(d => {
+    const doDia = estado.compromissos.filter(c => c.data === iso(d) && profs.some(p => p.id === c.profissional_id));
+    const itens = calcularColunas(doDia);
+
+    itens.forEach(it => {
+      const c = it.comp;
+      const p = profs.find(x => x.id === c.profissional_id);
+      const hs = horasDoCompromisso(c);
+      const inicioHora = hs[0] || HORAS[0];
+      const altura = (it.fim - it.ini) * ALTURA_CEL;
+      const cel = grade.querySelector(`.cel[data-hora="${inicioHora}"][data-data="${iso(d)}"]`);
+      if (!cel) return;
+      const el = criarEvento(c, p, altura, hs);
+      posicionarEvento(el, it);
+      cel.appendChild(el);
+    });
+  });
+
+  grade.querySelectorAll('.cel[data-hora]').forEach(cel => {
+    cel.onclick = e => {
+      if (e.target.closest('.evento')) return;
+      abrirModalComp(null, profs[0]?.id, cel.dataset.hora, cel.dataset.data);
+    };
+  });
+}
+
+function criarEvento(c, p, altura, hs){
+  const el = document.createElement('div');
+  el.className = 'evento';
+
+  const proj = projetoDoCompromisso(c);
+  el.style.background = proj ? proj.cor : (p ? p.cor : '#f97316');
+  el.style.height = (altura - 3) + 'px';
+  el.title = 'Clique para editar ou excluir';
+
+  const faixa = c.dia_inteiro
+    ? 'Dia inteiro'
+    : (hs && hs.length > 1 ? hs[0] + ' – ' + hs[hs.length-1] : (hs && hs[0]) || '');
+
+  const nomeProf = p ? p.nome : '';
+
+  el.innerHTML =
+    `<span class="lapis">✎</span>` +
+    `<div class="t">${esc(c.titulo)}</div>` +
+    (nomeProf ? `<div class="p">${esc(nomeProf)}</div>` : '') +
+    (proj ? `<div class="pr">📁 ${esc(proj.nome)}</div>` : '') +
+    `<div class="h">${faixa}</div>`;
+
+  el.onclick = ev => { ev.stopPropagation(); abrirModalComp(c, null, null); };
+  return el;
+}
+
+function renderSelectProf(){
+  $('#cProf').innerHTML = estado.profissionais.map(p => `<option value="${p.id}">${esc(p.nome)}</option>`).join('');
+}
+
+function renderProjetosChecklist(){
+  const box = $('#cProjetos');
+  if (estado.projetos.length === 0){
+    box.innerHTML = '<div class="sem-proj">Nenhum projeto cadastrado.</div>';
+    return;
+  }
+  box.innerHTML = projetosOrdenados(estado.projetos).map(p => {
+    const marcado = estado.projetosSel.includes(p.id);
+    const entrega = p.entrega ? formatarData(p.entrega) : '';
+    return `<label class="proj-opt">
+      <input type="checkbox" data-projsel="${p.id}" ${marcado?'checked':''} />
+      <span class="dot" style="background:${p.cor}"></span>
+      <span class="pnome">${esc(p.nome)}</span>
+      <span class="pent">${entrega}</span>
+    </label>`;
+  }).join('');
+  box.querySelectorAll('[data-projsel]').forEach(c => {
+    c.onchange = () => {
+      const id = c.dataset.projsel;
+      if (c.checked) estado.projetosSel = [id];
+      else estado.projetosSel = estado.projetosSel.filter(x => x !== id);
+      renderProjetosChecklist();
+    };
+  });
+}
+
+function renderResponsaveisChecklist(){
+  const box = $('#jResponsaveis');
+  if (estado.profissionais.length === 0){
+    box.innerHTML = '<div class="sem-proj">Nenhum profissional cadastrado. Cadastre um profissional primeiro.</div>';
+    return;
+  }
+  box.innerHTML = estado.profissionais.map(p => {
+    const marcado = estado.responsaveisSel.includes(p.id);
+    return `<label class="proj-opt">
+      <input type="checkbox" data-respsel="${p.id}" ${marcado?'checked':''} />
+      <span class="dot" style="background:${p.cor}"></span>
+      <span class="pnome">${esc(p.nome)}</span>
+      <span class="pent">${esc(p.setor || '')}</span>
+    </label>`;
+  }).join('');
+  box.querySelectorAll('[data-respsel]').forEach(c => {
+    c.onchange = () => {
+      const id = c.dataset.respsel;
+      if (c.checked) estado.responsaveisSel = [...estado.responsaveisSel, id];
+      else estado.responsaveisSel = estado.responsaveisSel.filter(x => x !== id);
+      renderResponsaveisChecklist();
+    };
+  });
+}
+
+function horariosOcupados(profId, dataStr, ignorarId){
+  const set = new Set();
+  estado.compromissos.forEach(c => {
+    if (c.profissional_id !== profId || c.data !== dataStr) return;
+    if (ignorarId && c.id === ignorarId) return;
+    horasDoCompromisso(c).forEach(h => set.add(h));
+  });
+  return set;
+}
+
+function renderHorarios(){
+  const box = $('#cHorarios');
+  const profId = $('#cProf').value;
+  const dataStr = $('#cData').value;
+  const ocupados = horariosOcupados(profId, dataStr, estado.editando?.id);
+
+  box.innerHTML = HORAS.map(h => {
+    const sel = estado.horasSel.includes(h);
+    const ocup = ocupados.has(h) && !sel;
+    const cls = sel ? 'ativo' : (ocup ? 'ocupado' : '');
+    return `<button type="button" data-h="${h}" class="${cls}" ${ocup?'disabled':''}>${h}</button>`;
+  }).join('');
+
+  box.querySelectorAll('[data-h]').forEach(b => {
+    b.onclick = () => {
+      const h = b.dataset.h;
+
+      if (estado.horasSel.length === 1 && estado.horasSel[0] === h){
+        estado.horasSel = [];
+        ultimoClique = null;
+        renderHorarios();
+        return;
+      }
+
+      if (estado.horasSel.includes(h)){
+        estado.horasSel = estado.horasSel.filter(x => x !== h);
+        ultimoClique = h;
+        renderHorarios();
+        return;
+      }
+
+      if (!ultimoClique){
+        estado.horasSel = [h];
+        ultimoClique = h;
+        renderHorarios();
+        return;
+      }
+
+      const i1 = HORAS.indexOf(ultimoClique);
+      const i2 = HORAS.indexOf(h);
+      const ini = Math.min(i1, i2);
+      const fim = Math.max(i1, i2);
+      const intervalo = HORAS.slice(ini, fim + 1).filter(x => !ocupados.has(x));
+
+      estado.horasSel = [...new Set([...estado.horasSel, ...intervalo])].sort();
+      ultimoClique = h;
+      renderHorarios();
+    };
+  });
+
+  const n = estado.horasSel.length;
+  const cont = $('#contadorHorarios');
+  if (n === 0) cont.textContent = '';
+  else if (n === 1) cont.textContent = '1 horário selecionado: ' + estado.horasSel[0];
+  else cont.textContent = n + ' horários selecionados: ' + estado.horasSel[0] + ' – ' + estado.horasSel[n-1];
+}
+
+function abrirModalComp(comp, profId, hora, dataStr){
+  estado.editando = comp || null;
+  estado.horasSel = comp ? horasDoCompromisso(comp) : (hora ? [hora] : []);
+  estado.projetosSel = comp && comp.projeto_id ? [comp.projeto_id] : [];
+  ultimoClique = null;
+
+  $('#tituloModalComp').textContent = comp ? 'Editar compromisso' : 'Novo compromisso';
+  $('#btnSalvarComp').textContent = comp ? 'Salvar alterações' : 'Confirmar compromisso';
+  $('#btnExcluirComp').style.display = comp ? 'flex' : 'none';
+
+  $('#cTitulo').value = comp ? comp.titulo : '';
+  $('#cObs').value = comp ? (comp.observacoes || '') : '';
+  $('#cData').value = comp ? comp.data : (dataStr || iso(estado.dataSel));
+  $('#cDiaInteiro').checked = comp ? !!comp.dia_inteiro : false;
+
+  if (comp){
+    $('#blocoAuditoriaComp').style.display = 'block';
+    $('#auditoriaComp').innerHTML = htmlAuditoria(comp);
+  } else {
+    $('#blocoAuditoriaComp').style.display = 'none';
+  }
+
+  renderSelectProf();
+  if (comp) $('#cProf').value = comp.profissional_id;
+  else if (profId) $('#cProf').value = profId;
+
+  $('#blocoHorario').style.display = $('#cDiaInteiro').checked ? 'none' : 'block';
+  renderProjetosChecklist();
+  renderHorarios();
+  $('#modalComp').classList.add('aberto');
+}
+
+$('#cDiaInteiro').onchange = e => {
+  $('#blocoHorario').style.display = e.target.checked ? 'none' : 'block';
+};
+$('#cProf').onchange = () => { ultimoClique = null; renderHorarios(); };
+$('#cData').onchange = () => { ultimoClique = null; renderHorarios(); };
+
+$('#btnSalvarComp').onclick = async () => {
+  const titulo = $('#cTitulo').value.trim();
+  if (!titulo){ alert('Informe o nome do compromisso.'); return; }
+  const profId = $('#cProf').value;
+  if (!profId){ alert('Cadastre um profissional primeiro.'); return; }
+  const diaInteiro = $('#cDiaInteiro').checked;
+  if (!diaInteiro && estado.horasSel.length === 0){ alert('Selecione pelo menos um horário.'); return; }
+
+  const lista = diaInteiro ? [] : [...estado.horasSel].sort();
+  const quem = nomeUsuarioLogado();
+  const agora = new Date().toISOString();
+
+  const payload = {
+    titulo, profissional_id: profId, data: $('#cData').value,
+    hora: lista.length ? lista[0] : null,
+    horarios: lista,
+    dia_inteiro: diaInteiro,
+    projeto_id: estado.projetosSel.length ? estado.projetosSel[0] : null,
+    observacoes: $('#cObs').value.trim() || null
+  };
+
+  let error;
+  if (estado.editando){
+    payload.alterado_por = quem;
+    payload.alterado_em = agora;
+    ({ error } = await db.from('compromissos').update(payload).eq('id', estado.editando.id));
+  } else {
+    payload.criado_por = quem;
+    payload.criado_em_por = agora;
+    ({ error } = await db.from('compromissos').insert(payload));
+  }
+  if (error){ alert('Erro ao salvar: ' + error.message); return; }
+  fecharModais();
+  await carregarCompromissos();
+  renderTudo();
+};
+
+$('#btnExcluirComp').onclick = async () => {
+  if (!estado.editando) return;
+  if (!confirm('Excluir o compromisso "' + estado.editando.titulo + '"?')) return;
+  const { error } = await db.from('compromissos').delete().eq('id', estado.editando.id);
+  if (error){ alert('Erro ao excluir: ' + error.message); return; }
+  fecharModais();
+  await carregarCompromissos();
+  renderTudo();
+};
+
+function renderCores(){
+  const box = $('#pCores');
+  box.innerHTML = CORES.map(c => `<button type="button" data-cor="${c}" class="${estado.corSel===c?'sel':''}" style="background:${c}"></button>`).join('');
+  box.querySelectorAll('[data-cor]').forEach(b => b.onclick = () => { estado.corSel = b.dataset.cor; renderCores(); });
+}
+
+function renderCoresProj(){
+  const box = $('#jCores');
+  box.innerHTML = CORES_PROJ.map(c => `<button type="button" data-corproj="${c}" class="${estado.corProjSel===c?'sel':''}" style="background:${c}"></button>`).join('');
+  box.querySelectorAll('[data-corproj]').forEach(b => b.onclick = () => { estado.corProjSel = b.dataset.corproj; renderCoresProj(); });
+}
+
+$('#btnAddProf').onclick = () => {
+  $('#pNome').value = '';
+  $('#pSetor').value = '';
+  estado.corSel = CORES[Math.floor(Math.random()*CORES.length)];
+  renderCores();
+  $('#modalProf').classList.add('aberto');
+};
+
+$('#btnSalvarProf').onclick = async () => {
+  const nome = $('#pNome').value.trim();
+  if (!nome){ alert('Informe o nome do profissional.'); return; }
+  const { error } = await db.from('profissionais').insert({
+    nome, setor: $('#pSetor').value.trim() || null, cor: estado.corSel
+  });
+  if (error){ alert('Erro ao salvar: ' + error.message); return; }
+  fecharModais();
+  await carregarTudo();
+};
+
+function abrirModalProj(proj){
+  estado.editandoProj = proj || null;
+
+  $('#tituloModalProj').textContent = proj ? 'Editar projeto' : 'Cadastrar projeto';
+  $('#btnSalvarProj').textContent = proj ? 'Salvar alterações' : 'Salvar projeto';
+  $('#btnExcluirProj').style.display = proj ? 'flex' : 'none';
+
+  $('#jNome').value = proj ? proj.nome : '';
+  $('#jEntrega').value = proj ? (proj.entrega || '') : '';
+
+  if (proj){
+    estado.corProjSel = proj.cor;
+    const nomes = (proj.responsaveis || '').split(',').map(s => s.trim()).filter(Boolean);
+    estado.responsaveisSel = estado.profissionais.filter(p => nomes.includes(p.nome)).map(p => p.id);
+    $('#blocoAuditoriaProj').style.display = 'block';
+    $('#auditoriaProj').innerHTML = htmlAuditoria(proj);
+  } else {
+    estado.corProjSel = CORES_PROJ[Math.floor(Math.random()*CORES_PROJ.length)];
+    estado.responsaveisSel = [];
+    $('#blocoAuditoriaProj').style.display = 'none';
+  }
+
+  renderCoresProj();
+  renderResponsaveisChecklist();
+  $('#modalProj').classList.add('aberto');
+}
+
+$('#btnAddProj').onclick = () => abrirModalProj(null);
+
+$('#btnSalvarProj').onclick = async () => {
+  const nome = $('#jNome').value.trim();
+  if (!nome){ alert('Informe o nome do projeto.'); return; }
+
+  const nomes = estado.responsaveisSel
+    .map(id => estado.profissionais.find(p => p.id === id))
+    .filter(Boolean)
+    .map(p => p.nome);
+
+  const quem = nomeUsuarioLogado();
+  const agora = new Date().toISOString();
+
+  const payload = {
+    nome,
+    responsaveis: nomes.length ? nomes.join(', ') : null,
+    entrega: $('#jEntrega').value || null,
+    cor: estado.corProjSel
+  };
+
+  let error;
+  if (estado.editandoProj){
+    payload.alterado_por = quem;
+    payload.alterado_em = agora;
+    ({ error } = await db.from('projetos').update(payload).eq('id', estado.editandoProj.id));
+  } else {
+    payload.criado_por = quem;
+    payload.criado_em_por = agora;
+    ({ error } = await db.from('projetos').insert(payload));
+  }
+  if (error){ alert('Erro ao salvar: ' + error.message); return; }
+  fecharModais();
+  await carregarTudo();
+};
+
+$('#btnExcluirProj').onclick = async () => {
+  if (!estado.editandoProj) return;
+  if (!confirm('Remover o projeto "' + estado.editandoProj.nome + '"? Os compromissos ficarão sem projeto.')) return;
+  const { error } = await db.from('projetos').update({ ativo: false }).eq('id', estado.editandoProj.id);
+  if (error){ alert('Erro ao excluir: ' + error.message); return; }
+  fecharModais();
+  await carregarTudo();
+};
+
+$('#btnToggleProj').onclick = () => {
+  estado.painelRecolhido = !estado.painelRecolhido;
+  const painel = $('#painelProj');
+  painel.classList.toggle('recolhido', estado.painelRecolhido);
+  $('#btnToggleProj').title = estado.painelRecolhido ? 'Mostrar projetos' : 'Esconder projetos';
+  localStorage.setItem('agenda_painel_proj', estado.painelRecolhido ? '1' : '0');
+};
+
+function fecharModais(){ document.querySelectorAll('.overlay').forEach(o => o.classList.remove('aberto')); }
+document.querySelectorAll('[data-fechar]').forEach(b => b.onclick = fecharModais);
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) fecharModais(); }));
+
+$('#btnNovo').onclick = () => abrirModalComp(null, estado.profissionais[0]?.id, null);
+$('#diaAnt').onclick = () => { const d = new Date(estado.dataSel); d.setDate(d.getDate() - (estado.visao === 'dia' ? 1 : 7)); estado.dataSel = d; renderTudo(); };
+$('#diaProx').onclick = () => { const d = new Date(estado.dataSel); d.setDate(d.getDate() + (estado.visao === 'dia' ? 1 : 7)); estado.dataSel = d; renderTudo(); };
+$('#btnHoje').onclick = () => { estado.dataSel = new Date(); renderTudo(); };
+$('#mesAnt').onclick = () => { estado.mesMini = new Date(estado.mesMini.getFullYear(), estado.mesMini.getMonth()-1, 1); renderMiniCal(); };
+$('#mesProx').onclick = () => { estado.mesMini = new Date(estado.mesMini.getFullYear(), estado.mesMini.getMonth()+1, 1); renderMiniCal(); };
+
+document.querySelectorAll('.seg button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.seg button').forEach(x => x.classList.remove('ativo'));
+    b.classList.add('ativo');
+    estado.visao = b.dataset.view;
+    renderTudo();
+  };
+});
+
+$('#btnAtualizar').onclick = carregarTudo;
+
+$('#busca').oninput = e => {
+  const q = e.target.value.toLowerCase().trim();
+  if (!q){ renderGrade(); return; }
+  const achados = estado.compromissos.filter(c => c.titulo.toLowerCase().includes(q));
+  if (achados.length === 1){ estado.dataSel = parseISO(achados[0].data); renderTudo(); }
+};
+
+function esc(s){
+  return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+(function init(){
+  if (localStorage.getItem('agenda_painel_proj') === '1'){
+    estado.painelRecolhido = true;
+    $('#painelProj').classList.add('recolhido');
+    $('#btnToggleProj').title = 'Mostrar projetos';
+  }
+
+  const salvo = sessionStorage.getItem('agenda_user');
+  if (salvo){ try { estado.usuario = JSON.parse(salvo); entrarNoApp(); } catch(e){} }
+})();
+</script>
+</body>
+</html>
