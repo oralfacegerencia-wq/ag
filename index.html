@@ -12,7 +12,6 @@
   body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
   button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:14px}
   input,select,textarea{font-family:inherit;font-size:14px}
-
   #telaLogin{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fff7ed,#f7f7f8);z-index:200}
   .login-box{background:#fff;padding:36px 32px;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.08);width:340px}
   .login-box h1{font-size:20px;margin-bottom:4px}
@@ -24,7 +23,6 @@
   .btn-laranja{width:100%;background:var(--laranja);color:#fff;padding:11px;border-radius:8px;font-weight:600}
   .btn-laranja:hover{background:var(--laranja-esc)}
   .erro{color:#dc2626;font-size:13px;margin-top:10px;min-height:18px}
-
   #app{display:none;height:100vh;flex-direction:column}
   header{background:#fff;border-bottom:1px solid var(--borda);padding:10px 18px;display:flex;align-items:center;gap:16px}
   .busca{flex:1;max-width:420px;position:relative}
@@ -35,7 +33,6 @@
   .btn-sair{color:var(--txt2);font-size:13px;padding:6px 10px;border-radius:6px}
   .btn-sair:hover{background:var(--bg)}
   .corpo{display:flex;flex:1;overflow:hidden}
-
   aside{width:260px;background:#fff;border-right:1px solid var(--borda);padding:14px;overflow-y:auto;flex-shrink:0}
   .btn-novo{width:100%;background:var(--laranja);color:#fff;padding:10px;border-radius:8px;font-weight:600;margin-bottom:16px}
   .btn-novo:hover{background:var(--laranja-esc)}
@@ -50,13 +47,14 @@
   .dias button.hoje{background:var(--laranja);color:#fff;font-weight:700}
   .dias button.sel{outline:2px solid var(--laranja);outline-offset:-2px}
   .dias button.vazio{visibility:hidden}
-
   .sec-tit{font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
   .btn-add-mini{color:var(--laranja);font-size:18px;line-height:1;padding:0 4px}
   .btn-todos{font-size:10px;font-weight:700;color:var(--laranja-esc);background:#fff7ed;border:1px solid #fed7aa;border-radius:5px;padding:3px 7px;text-transform:uppercase;letter-spacing:.03em}
   .btn-todos:hover{background:#ffedd5}
   .btn-todos.ativo{background:var(--laranja);color:#fff;border-color:var(--laranja)}
-
+  .btn-concluidos{font-size:10px;font-weight:700;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:5px;padding:3px 7px;text-transform:uppercase;letter-spacing:.03em}
+  .btn-concluidos:hover{background:#dcfce7}
+  .btn-concluidos.ativo{background:#15803d;color:#fff;border-color:#15803d}
   .prof-item{display:flex;align-items:center;gap:8px;padding:7px 6px;border-radius:6px;font-size:13px}
   .prof-item:hover{background:var(--bg)}
   .prof-item input[type=checkbox]{accent-color:var(--laranja);cursor:pointer;flex-shrink:0}
@@ -66,7 +64,6 @@
   .prof-item .setor{font-size:11px;color:var(--txt2)}
   .btn-del{color:#d1d5db;font-size:14px;padding:0 2px;flex-shrink:0}
   .btn-del:hover{color:#dc2626}
-
   main{flex:1;display:flex;flex-direction:column;overflow:hidden}
   .toolbar{background:#fff;border-bottom:1px solid var(--borda);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .nav-data{display:flex;align-items:center;gap:4px}
@@ -77,7 +74,6 @@
   .seg button{padding:6px 14px;color:var(--txt2)}
   .seg button.ativo{background:var(--laranja);color:#fff;font-weight:600}
   .spacer{flex:1}
-
   .grade-wrap{flex:1;overflow:auto;background:#fff}
   .grade{display:grid;min-width:max-content}
   .grade .cab{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--borda)}
@@ -99,11 +95,11 @@
   .evento .lapis{position:absolute;top:3px;right:3px;font-size:10px;opacity:0;transition:.12s}
   .evento:hover .lapis{opacity:.9}
   .vazio-msg{padding:40px;text-align:center;color:var(--txt2)}
-
   .painel-proj{width:270px;background:#fff;border-left:1px solid var(--borda);padding:14px;overflow-y:auto;flex-shrink:0;transition:width .2s,padding .2s}
   .painel-proj.recolhido{width:44px;padding:14px 6px;overflow:hidden}
   .painel-proj.recolhido .sec-tit span,
   .painel-proj.recolhido .btn-add-mini,
+  .painel-proj.recolhido .btn-concluidos,
   .painel-proj.recolhido #filtroProjAviso,
   .painel-proj.recolhido #listaProj{display:none}
   .painel-proj.recolhido .sec-tit{justify-content:center;margin-bottom:0}
@@ -111,7 +107,6 @@
   .sec-tit .btn-toggle-proj{color:var(--txt2);font-size:13px;padding:0 4px;line-height:1;transition:transform .2s}
   .sec-tit .btn-toggle-proj:hover{color:var(--laranja)}
   .sec-tit .acoes{display:flex;align-items:center;gap:2px}
-
   .proj-card{border-radius:10px;padding:10px 12px;margin-bottom:9px;color:#fff;position:relative;box-shadow:0 1px 4px rgba(0,0,0,.12);cursor:pointer;transition:.15s}
   .proj-card:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.18)}
   .proj-card .pn{font-weight:700;font-size:13px;margin-bottom:3px;padding-right:18px;word-break:break-word}
@@ -119,10 +114,12 @@
   .proj-card .pl b{font-weight:600}
   .proj-card .x{position:absolute;top:6px;right:8px;color:rgba(255,255,255,.75);font-size:15px;line-height:1}
   .proj-card .x:hover{color:#fff}
+  .proj-card.concluido{opacity:.78;filter:grayscale(.3)}
+  .proj-card .btn-concluir{position:absolute;bottom:8px;right:8px;background:rgba(255,255,255,.22);color:#fff;border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700}
+  .proj-card .btn-concluir:hover{background:rgba(255,255,255,.42)}
   .proj-vazio{font-size:12px;color:#9ca3af;padding:8px 4px;line-height:1.5}
   .filtro-aviso{font-size:11px;color:var(--laranja-esc);background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:6px 8px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;gap:6px}
   .filtro-aviso button{color:var(--laranja-esc);font-size:11px;font-weight:700;text-decoration:underline;flex-shrink:0}
-
   .overlay{position:fixed;inset:0;background:rgba(17,24,39,.45);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
   .overlay.aberto{display:flex}
   .modal{background:#fff;border-radius:14px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
@@ -155,7 +152,6 @@
   .cores{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
   .cores button{width:30px;height:30px;border-radius:50%;border:3px solid transparent}
   .cores button.sel{border-color:#111827}
-
   .lista-proj-sel{max-height:150px;overflow-y:auto;border:1px solid var(--borda);border-radius:8px;padding:6px}
   .proj-opt{display:flex;align-items:center;gap:8px;padding:7px 6px;border-radius:6px;font-size:13px;cursor:pointer}
   .proj-opt:hover{background:var(--bg)}
@@ -164,14 +160,12 @@
   .proj-opt .pent{font-size:11px;color:var(--txt2)}
   .sem-proj{font-size:12px;color:#9ca3af;padding:8px 6px}
   .aviso-proj{font-size:11px;color:var(--txt2);margin-top:6px}
-
   .auditoria{background:#f9fafb;border:1px solid var(--borda);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--txt2);line-height:1.6;margin-top:4px}
   .auditoria b{color:var(--txt);font-weight:600}
   .auditoria .linha{display:flex;gap:6px;align-items:baseline}
 </style>
 </head>
 <body>
-
 <div id="telaLogin">
   <form class="login-box" id="formLogin">
     <h1>Agenda</h1>
@@ -182,7 +176,6 @@
     <div class="erro" id="erroLogin"></div>
   </form>
 </div>
-
 <div id="app">
   <header>
     <div class="busca"><span>🔍</span><input id="busca" placeholder="Encontre compromissos ou profissionais" /></div>
@@ -192,7 +185,6 @@
       <button class="btn-sair" id="btnSair">Sair</button>
     </div>
   </header>
-
   <div class="corpo">
     <aside>
       <button class="btn-novo" id="btnNovo">＋ Novo</button>
@@ -210,7 +202,6 @@
       </div>
       <div id="listaProf"></div>
     </aside>
-
     <main>
       <div class="toolbar">
         <div class="nav-data">
@@ -228,11 +219,11 @@
       </div>
       <div class="grade-wrap"><div class="grade" id="grade"></div></div>
     </main>
-
     <div class="painel-proj" id="painelProj">
       <div class="sec-tit">
         <span>Projetos</span>
         <div class="acoes">
+          <button class="btn-concluidos" id="btnVerConcluidos" title="Ver projetos concluídos">✓ Concluídos</button>
           <button class="btn-add-mini" id="btnAddProj" title="Cadastrar projeto">＋</button>
           <button class="btn-toggle-proj" id="btnToggleProj" title="Esconder/mostrar projetos">❯</button>
         </div>
@@ -242,7 +233,6 @@
     </div>
   </div>
 </div>
-
 <div class="overlay" id="modalComp">
   <div class="modal">
     <div class="modal-topo"><h2 id="tituloModalComp">Novo compromisso</h2><button class="fechar" data-fechar>×</button></div>
@@ -290,7 +280,6 @@
     </div>
   </div>
 </div>
-
 <div class="overlay" id="modalProf">
   <div class="modal" style="max-width:440px">
     <div class="modal-topo"><h2>Cadastrar profissional</h2><button class="fechar" data-fechar>×</button></div>
@@ -307,7 +296,6 @@
     </div>
   </div>
 </div>
-
 <div class="overlay" id="modalProj">
   <div class="modal" style="max-width:440px">
     <div class="modal-topo"><h2 id="tituloModalProj">Cadastrar projeto</h2><button class="fechar" data-fechar>×</button></div>
@@ -319,6 +307,13 @@
         <div class="aviso-proj">Marque os profissionais responsáveis por este projeto.</div>
       </div>
       <div class="campo"><label>Data de entrega</label><input type="date" id="jEntrega" /></div>
+      <div class="campo">
+        <label>Status</label>
+        <select id="jStatus">
+          <option value="ativo">Ativo</option>
+          <option value="concluido">Concluído</option>
+        </select>
+      </div>
       <div class="campo"><label>Cor do card</label><div class="cores" id="jCores"></div></div>
       <div class="campo" id="blocoAuditoriaProj" style="display:none">
         <label>Registro</label>
@@ -334,11 +329,9 @@
     </div>
   </div>
 </div>
-
 <script>
 const CFG = window.AGENDA_CONFIG || {};
 const db = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
-
 const HORAS = [];
 for (let h = 8; h <= 18; h++) {
   for (let m = 0; m < 60; m += 15) {
@@ -349,7 +342,6 @@ for (let h = 8; h <= 18; h++) {
 const ALTURA_CEL = 44;
 const CORES = ['#3b82f6','#6b7280','#15803d','#8b5cf6','#ec4899','#22c55e','#eab308','#a78bfa','#f97316','#0ea5e9','#ef4444','#14b8a6'];
 const CORES_PROJ = ['#8b5cf6','#6366f1','#0ea5e9','#14b8a6','#22c55e','#eab308','#f97316','#ef4444','#ec4899','#64748b'];
-
 let estado = {
   usuario: null, profissionais: [], compromissos: [], projetos: [],
   dataSel: new Date(), mesMini: new Date(), visao: 'dia',
@@ -357,18 +349,16 @@ let estado = {
   horasSel: [], projetosSel: [], responsaveisSel: [],
   editando: null, editandoProj: null,
   painelRecolhido: false,
+  vendoConcluidos: false,
   profsMarcados: []
 };
-
 let ultimoClique = null;
-
 const $ = s => document.querySelector(s);
 const pad = n => String(n).padStart(2,'0');
 const iso = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
 const parseISO = s => { const [a,m,d] = s.split('-').map(Number); return new Date(a, m-1, d); };
 const DIAS = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-
 function horasDoCompromisso(c){
   if (Array.isArray(c.horarios) && c.horarios.length) return [...c.horarios].sort();
   if (c.hora) return [c.hora];
@@ -378,32 +368,30 @@ function projetoDoCompromisso(c){
   if (!c.projeto_id) return null;
   return estado.projetos.find(p => p.id === c.projeto_id) || null;
 }
-
 function nomeUsuarioLogado(){
   if (!estado.usuario) return 'Desconhecido';
   return estado.usuario.nome || estado.usuario.usuario;
 }
-
 function formatarDataHora(s){
   if (!s) return '';
   const d = new Date(s);
   return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + '/' + d.getFullYear() +
          ' às ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
 }
-
 function htmlAuditoria(reg){
   const criadoPor = reg.criado_por || '—';
   const criadoEm = reg.criado_em_por ? formatarDataHora(reg.criado_em_por) : (reg.criado_em ? formatarDataHora(reg.criado_em) : '');
   const alteradoPor = reg.alterado_por;
   const alteradoEm = reg.alterado_em ? formatarDataHora(reg.alterado_em) : '';
-
   let html = `<div class="linha"><b>Criado por:</b> ${esc(criadoPor)}${criadoEm ? ' · ' + criadoEm : ''}</div>`;
   if (alteradoPor){
     html += `<div class="linha"><b>Última alteração:</b> ${esc(alteradoPor)}${alteradoEm ? ' · ' + alteradoEm : ''}</div>`;
   }
+  if (reg.concluido_por){
+    html += `<div class="linha"><b>Concluído por:</b> ${esc(reg.concluido_por)}${reg.concluido_em ? ' · ' + formatarDataHora(reg.concluido_em) : ''}</div>`;
+  }
   return html;
 }
-
 $('#formLogin').addEventListener('submit', async e => {
   e.preventDefault();
   const erro = $('#erroLogin');
@@ -418,7 +406,6 @@ $('#formLogin').addEventListener('submit', async e => {
   sessionStorage.setItem('agenda_user', JSON.stringify(data[0]));
   entrarNoApp();
 });
-
 $('#btnSair').addEventListener('click', () => {
   sessionStorage.removeItem('agenda_user');
   estado.usuario = null;
@@ -426,7 +413,6 @@ $('#btnSair').addEventListener('click', () => {
   $('#telaLogin').style.display = 'flex';
   $('#inSenha').value = '';
 });
-
 function entrarNoApp(){
   $('#telaLogin').style.display = 'none';
   $('#app').style.display = 'flex';
@@ -435,7 +421,6 @@ function entrarNoApp(){
   $('#avatarUser').textContent = nome.charAt(0).toUpperCase();
   carregarTudo();
 }
-
 async function carregarTudo(){
   await carregarProfissionais();
   await carregarProjetos();
@@ -446,7 +431,6 @@ async function carregarProfissionais(){
   const { data, error } = await db.from('profissionais').select('*').eq('ativo', true).order('nome');
   if (error) { console.error(error); return; }
   estado.profissionais = data || [];
-  // por padrão todos marcados
   estado.profsMarcados = estado.profissionais.map(p => p.id);
 }
 async function carregarProjetos(){
@@ -459,13 +443,11 @@ async function carregarCompromissos(){
   if (error) { console.error(error); return; }
   estado.compromissos = data || [];
 }
-
 function renderTudo(){
   renderMiniCal(); renderListaProf(); renderListaProj(); renderToolbar(); renderGrade();
   renderSelectProf(); renderCores(); renderCoresProj();
   renderProjetosChecklist(); renderResponsaveisChecklist(); renderHorarios();
 }
-
 function renderToolbar(){
   const d = estado.dataSel;
   if (estado.visao === 'dia'){
@@ -476,7 +458,6 @@ function renderToolbar(){
   }
 }
 function inicioSemana(d){ const x = new Date(d); x.setDate(x.getDate() - x.getDay()); return x; }
-
 function renderMiniCal(){
   const m = estado.mesMini;
   $('#mesTitulo').textContent = MESES[m.getMonth()] + ' ' + m.getFullYear();
@@ -497,7 +478,6 @@ function renderMiniCal(){
     b.onclick = () => { estado.dataSel = parseISO(b.dataset.dia); renderTudo(); };
   });
 }
-
 function renderListaProf(){
   const box = $('#listaProf');
   if (estado.profissionais.length === 0){
@@ -515,7 +495,6 @@ function renderListaProf(){
       <button class="btn-del" data-del="${p.id}" title="Remover">×</button>
     </div>`;
   }).join('');
-
   box.querySelectorAll('[data-filtro]').forEach(c => {
     c.onchange = () => {
       const id = c.dataset.filtro;
@@ -527,8 +506,6 @@ function renderListaProf(){
       renderListaProf(); renderGrade(); renderListaProj();
     };
   });
-
-  // clique no nome: seleciona só ele
   box.querySelectorAll('[data-nomeprof]').forEach(el => {
     el.onclick = () => {
       const id = el.dataset.nomeprof;
@@ -536,7 +513,6 @@ function renderListaProf(){
       renderListaProf(); renderGrade(); renderListaProj();
     };
   });
-
   box.querySelectorAll('[data-del]').forEach(b => {
     b.onclick = async () => {
       if (!confirm('Remover este profissional e todos os seus compromissos?')) return;
@@ -544,25 +520,20 @@ function renderListaProf(){
       await carregarTudo();
     };
   });
-
   atualizarBotaoTodos();
 }
-
 function atualizarBotaoTodos(){
   const btn = $('#btnTodosProf');
   const todos = estado.profissionais.length > 0 && estado.profsMarcados.length === estado.profissionais.length;
   btn.classList.toggle('ativo', todos);
 }
-
 $('#btnTodosProf').onclick = () => {
   estado.profsMarcados = estado.profissionais.map(p => p.id);
   renderListaProf(); renderGrade(); renderListaProj();
 };
-
 function profissionaisMarcados(){
   return estado.profsMarcados;
 }
-
 function projetosOrdenados(lista){
   return [...lista].sort((a, b) => {
     const da = a.entrega ? new Date(a.entrega + 'T00:00:00').getTime() : null;
@@ -570,37 +541,33 @@ function projetosOrdenados(lista){
     if (da === null && db_ === null) return (a.nome || '').localeCompare(b.nome || '');
     if (da === null) return 1;
     if (db_ === null) return -1;
-    if (db_ !== da) return db_ - da;
+    if (db_ !== da) return da - db_;
     return (a.nome || '').localeCompare(b.nome || '');
   });
 }
-
 function projetosVisiveis(){
   const marcados = profissionaisMarcados();
-  let base = estado.projetos;
-
+  const querStatus = estado.vendoConcluidos ? 'concluido' : 'ativo';
+  let base = estado.projetos.filter(p => (p.status || 'ativo') === querStatus);
   if (marcados.length > 0 && marcados.length < estado.profissionais.length){
     const nomes = estado.profissionais
       .filter(p => marcados.includes(p.id))
       .map(p => p.nome);
-
-    base = estado.projetos.filter(proj => {
+    base = base.filter(proj => {
       const resp = (proj.responsaveis || '').split(',').map(s => s.trim()).filter(Boolean);
       return resp.some(n => nomes.includes(n));
     });
   }
-
   return projetosOrdenados(base);
 }
-
 function renderListaProj(){
   const box = $('#listaProj');
   const aviso = $('#filtroProjAviso');
   const lista = projetosVisiveis();
-
   const marcados = profissionaisMarcados();
   const filtrando = marcados.length > 0 && marcados.length < estado.profissionais.length;
-
+  const btnConc = $('#btnVerConcluidos');
+  if (btnConc) btnConc.classList.toggle('ativo', estado.vendoConcluidos);
   if (filtrando){
     const nomes = estado.profissionais.filter(p => marcados.includes(p.id)).map(p => p.nome).join(', ');
     aviso.innerHTML = `<div class="filtro-aviso"><span>Mostrando projetos de: <b>${esc(nomes)}</b></span><button id="limparFiltroProj">ver todos</button></div>`;
@@ -612,33 +579,50 @@ function renderListaProj(){
   } else {
     aviso.innerHTML = '';
   }
-
   if (lista.length === 0){
     box.innerHTML = '<div class="proj-vazio">' +
-      (filtrando ? 'Nenhum projeto vinculado a este profissional.' : 'Nenhum projeto cadastrado. Clique no + para criar.') +
+      (estado.vendoConcluidos
+        ? 'Nenhum projeto concluído.'
+        : (filtrando ? 'Nenhum projeto vinculado a este profissional.' : 'Nenhum projeto cadastrado. Clique no + para criar.')) +
       '</div>';
     return;
   }
-
   box.innerHTML = lista.map(p => {
     const entrega = p.entrega ? formatarData(p.entrega) : 'Sem data';
-    return `<div class="proj-card" style="background:${p.cor}" data-editproj="${p.id}" title="Clique para editar">
+    const concluido = (p.status || 'ativo') === 'concluido';
+    return `<div class="proj-card${concluido?' concluido':''}" style="background:${p.cor}" data-editproj="${p.id}" title="Clique para editar">
       <button class="x" data-delproj="${p.id}" title="Remover">×</button>
       <div class="pn">${esc(p.nome)}</div>
       <div class="pl"><b>Resp.:</b> ${esc(p.responsaveis || '—')}</div>
       <div class="pl"><b>Entrega:</b> ${entrega}</div>
       <div class="pl" style="opacity:.8;font-size:10px;margin-top:4px"><b>Por:</b> ${esc(p.criado_por || '—')}</div>
+      ${concluido
+        ? `<div class="pl" style="opacity:.85;font-size:10px;margin-top:2px"><b>Concluído:</b> ${esc(p.concluido_por || '—')}</div>`
+        : `<button class="btn-concluir" data-concluirproj="${p.id}" title="Marcar como concluído">✓ Concluir</button>`}
     </div>`;
   }).join('');
-
   box.querySelectorAll('[data-editproj]').forEach(card => {
     card.onclick = e => {
-      if (e.target.closest('[data-delproj]')) return;
+      if (e.target.closest('[data-delproj]') || e.target.closest('[data-concluirproj]')) return;
       const proj = estado.projetos.find(x => x.id === card.dataset.editproj);
       if (proj) abrirModalProj(proj);
     };
   });
-
+  box.querySelectorAll('[data-concluirproj]').forEach(b => {
+    b.onclick = async e => {
+      e.stopPropagation();
+      const proj = estado.projetos.find(x => x.id === b.dataset.concluirproj);
+      if (!proj) return;
+      if (!confirm('Concluir o projeto "' + proj.nome + '"?\n\nEle sairá da agenda e ficará na lista de concluídos.')) return;
+      const { error } = await db.from('projetos').update({
+        status: 'concluido',
+        concluido_por: nomeUsuarioLogado(),
+        concluido_em: new Date().toISOString()
+      }).eq('id', proj.id);
+      if (error){ alert('Erro ao concluir: ' + error.message); return; }
+      await carregarTudo();
+    };
+  });
   box.querySelectorAll('[data-delproj]').forEach(b => {
     b.onclick = async e => {
       e.stopPropagation();
@@ -648,18 +632,15 @@ function renderListaProj(){
     };
   });
 }
-
 function formatarData(s){
   const d = parseISO(s);
   return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + '/' + d.getFullYear();
 }
-
 function profissionaisVisiveis(){
   const marcados = profissionaisMarcados();
   if (marcados.length === 0) return estado.profissionais;
   return estado.profissionais.filter(p => marcados.includes(p.id));
 }
-
 function renderGrade(){
   const grade = $('#grade');
   const profs = profissionaisVisiveis();
@@ -671,20 +652,16 @@ function renderGrade(){
   if (estado.visao === 'dia') renderGradeDia(grade, profs);
   else renderGradeSemana(grade, profs);
 }
-
 function calcularColunas(comps){
   if (comps.length === 0) return [];
-
   const itens = comps.map(c => {
     const hs = horasDoCompromisso(c);
     const ini = c.dia_inteiro ? 0 : Math.max(0, HORAS.indexOf(hs[0] || HORAS[0]));
     const fim = c.dia_inteiro ? HORAS.length : ini + Math.max(1, hs.length);
     return { comp: c, ini, fim, coluna: 0, totalColunas: 1 };
   }).sort((a, b) => a.ini - b.ini || b.fim - a.fim);
-
   let grupo = [];
   let fimGrupo = -1;
-
   const fecharGrupo = () => {
     if (grupo.length === 0) return;
     const colunas = [];
@@ -699,7 +676,6 @@ function calcularColunas(comps){
     grupo = [];
     fimGrupo = -1;
   };
-
   itens.forEach(it => {
     if (grupo.length > 0 && it.ini >= fimGrupo){
       fecharGrupo();
@@ -708,21 +684,17 @@ function calcularColunas(comps){
     fimGrupo = Math.max(fimGrupo, it.fim);
   });
   fecharGrupo();
-
   return itens;
 }
-
 function posicionarEvento(el, it){
   const total = it.totalColunas;
   const col = it.coluna;
   const larguraPct = 100 / total;
   const gap = 1;
-
   el.style.left = `calc(${col * larguraPct}% + ${gap}px)`;
   el.style.width = `calc(${larguraPct}% - ${gap * 2}px)`;
   el.style.right = 'auto';
 }
-
 function renderGradeDia(grade, profs){
   grade.style.gridTemplateColumns = '64px repeat(' + profs.length + ', minmax(150px, 1fr))';
   let html = '<div class="cab col-hora-vazia"></div>';
@@ -735,11 +707,9 @@ function renderGradeDia(grade, profs){
     profs.forEach(p => { html += `<div class="cel" data-hora="${h}" data-prof="${p.id}"></div>`; });
   });
   grade.innerHTML = html;
-
   profs.forEach(p => {
     const doDia = estado.compromissos.filter(c => c.profissional_id === p.id && c.data === iso(estado.dataSel));
     const itens = calcularColunas(doDia);
-
     itens.forEach(it => {
       const c = it.comp;
       const hs = horasDoCompromisso(c);
@@ -752,7 +722,6 @@ function renderGradeDia(grade, profs){
       cel.appendChild(el);
     });
   });
-
   grade.querySelectorAll('.cel[data-hora]').forEach(cel => {
     cel.onclick = e => {
       if (e.target.closest('.evento')) return;
@@ -760,7 +729,6 @@ function renderGradeDia(grade, profs){
     };
   });
 }
-
 function renderGradeSemana(grade, profs){
   const ini = inicioSemana(estado.dataSel);
   const dias = [];
@@ -776,11 +744,9 @@ function renderGradeSemana(grade, profs){
     dias.forEach(d => { html += `<div class="cel" data-hora="${h}" data-data="${iso(d)}"></div>`; });
   });
   grade.innerHTML = html;
-
   dias.forEach(d => {
     const doDia = estado.compromissos.filter(c => c.data === iso(d) && profs.some(p => p.id === c.profissional_id));
     const itens = calcularColunas(doDia);
-
     itens.forEach(it => {
       const c = it.comp;
       const p = profs.find(x => x.id === c.profissional_id);
@@ -794,7 +760,6 @@ function renderGradeSemana(grade, profs){
       cel.appendChild(el);
     });
   });
-
   grade.querySelectorAll('.cel[data-hora]').forEach(cel => {
     cel.onclick = e => {
       if (e.target.closest('.evento')) return;
@@ -802,44 +767,37 @@ function renderGradeSemana(grade, profs){
     };
   });
 }
-
 function criarEvento(c, p, altura, hs){
   const el = document.createElement('div');
   el.className = 'evento';
-
   const proj = projetoDoCompromisso(c);
   el.style.background = proj ? proj.cor : (p ? p.cor : '#f97316');
   el.style.height = (altura - 3) + 'px';
   el.title = 'Clique para editar ou excluir';
-
   const faixa = c.dia_inteiro
     ? 'Dia inteiro'
     : (hs && hs.length > 1 ? hs[0] + ' – ' + hs[hs.length-1] : (hs && hs[0]) || '');
-
   const nomeProf = p ? p.nome : '';
-
   el.innerHTML =
     `<span class="lapis">✎</span>` +
     `<div class="t">${esc(c.titulo)}</div>` +
     (nomeProf ? `<div class="p">${esc(nomeProf)}</div>` : '') +
     (proj ? `<div class="pr">📁 ${esc(proj.nome)}</div>` : '') +
     `<div class="h">${faixa}</div>`;
-
   el.onclick = ev => { ev.stopPropagation(); abrirModalComp(c, null, null); };
   return el;
 }
-
 function renderSelectProf(){
   $('#cProf').innerHTML = estado.profissionais.map(p => `<option value="${p.id}">${esc(p.nome)}</option>`).join('');
 }
-
 function renderProjetosChecklist(){
   const box = $('#cProjetos');
-  if (estado.projetos.length === 0){
-    box.innerHTML = '<div class="sem-proj">Nenhum projeto cadastrado.</div>';
+  const ativos = estado.projetos.filter(p => (p.status || 'ativo') === 'ativo');
+  if (ativos.length === 0){
+    box.innerHTML = '<div class="sem-proj">Nenhum projeto ativo cadastrado.</div>';
     return;
   }
-  box.innerHTML = projetosOrdenados(estado.projetos).map(p => {
+  box.innerHTML = projetosOrdenados(ativos).map(p => {
     const marcado = estado.projetosSel.includes(p.id);
     const entrega = p.entrega ? formatarData(p.entrega) : '';
     return `<label class="proj-opt">
@@ -858,7 +816,6 @@ function renderProjetosChecklist(){
     };
   });
 }
-
 function renderResponsaveisChecklist(){
   const box = $('#jResponsaveis');
   if (estado.profissionais.length === 0){
@@ -883,7 +840,6 @@ function renderResponsaveisChecklist(){
     };
   });
 }
-
 function horariosOcupados(profId, dataStr, ignorarId){
   const set = new Set();
   estado.compromissos.forEach(c => {
@@ -893,102 +849,85 @@ function horariosOcupados(profId, dataStr, ignorarId){
   });
   return set;
 }
-
 function renderHorarios(){
   const box = $('#cHorarios');
   const profId = $('#cProf').value;
   const dataStr = $('#cData').value;
   const ocupados = horariosOcupados(profId, dataStr, estado.editando?.id);
-
   box.innerHTML = HORAS.map(h => {
     const sel = estado.horasSel.includes(h);
     const ocup = ocupados.has(h) && !sel;
     const cls = sel ? 'ativo' : (ocup ? 'ocupado' : '');
     return `<button type="button" data-h="${h}" class="${cls}" ${ocup?'disabled':''}>${h}</button>`;
   }).join('');
-
   box.querySelectorAll('[data-h]').forEach(b => {
     b.onclick = () => {
       const h = b.dataset.h;
-
       if (estado.horasSel.length === 1 && estado.horasSel[0] === h){
         estado.horasSel = [];
         ultimoClique = null;
         renderHorarios();
         return;
       }
-
       if (estado.horasSel.includes(h)){
         estado.horasSel = estado.horasSel.filter(x => x !== h);
         ultimoClique = h;
         renderHorarios();
         return;
       }
-
       if (!ultimoClique){
         estado.horasSel = [h];
         ultimoClique = h;
         renderHorarios();
         return;
       }
-
       const i1 = HORAS.indexOf(ultimoClique);
       const i2 = HORAS.indexOf(h);
       const ini = Math.min(i1, i2);
       const fim = Math.max(i1, i2);
       const intervalo = HORAS.slice(ini, fim + 1).filter(x => !ocupados.has(x));
-
       estado.horasSel = [...new Set([...estado.horasSel, ...intervalo])].sort();
       ultimoClique = h;
       renderHorarios();
     };
   });
-
   const n = estado.horasSel.length;
   const cont = $('#contadorHorarios');
   if (n === 0) cont.textContent = '';
   else if (n === 1) cont.textContent = '1 horário selecionado: ' + estado.horasSel[0];
   else cont.textContent = n + ' horários selecionados: ' + estado.horasSel[0] + ' – ' + estado.horasSel[n-1];
 }
-
 function abrirModalComp(comp, profId, hora, dataStr){
   estado.editando = comp || null;
   estado.horasSel = comp ? horasDoCompromisso(comp) : (hora ? [hora] : []);
   estado.projetosSel = comp && comp.projeto_id ? [comp.projeto_id] : [];
   ultimoClique = null;
-
   $('#tituloModalComp').textContent = comp ? 'Editar compromisso' : 'Novo compromisso';
   $('#btnSalvarComp').textContent = comp ? 'Salvar alterações' : 'Confirmar compromisso';
   $('#btnExcluirComp').style.display = comp ? 'flex' : 'none';
-
   $('#cTitulo').value = comp ? comp.titulo : '';
   $('#cObs').value = comp ? (comp.observacoes || '') : '';
   $('#cData').value = comp ? comp.data : (dataStr || iso(estado.dataSel));
   $('#cDiaInteiro').checked = comp ? !!comp.dia_inteiro : false;
-
   if (comp){
     $('#blocoAuditoriaComp').style.display = 'block';
     $('#auditoriaComp').innerHTML = htmlAuditoria(comp);
   } else {
     $('#blocoAuditoriaComp').style.display = 'none';
   }
-
   renderSelectProf();
   if (comp) $('#cProf').value = comp.profissional_id;
   else if (profId) $('#cProf').value = profId;
-
   $('#blocoHorario').style.display = $('#cDiaInteiro').checked ? 'none' : 'block';
   renderProjetosChecklist();
   renderHorarios();
   $('#modalComp').classList.add('aberto');
 }
-
 $('#cDiaInteiro').onchange = e => {
   $('#blocoHorario').style.display = e.target.checked ? 'none' : 'block';
 };
 $('#cProf').onchange = () => { ultimoClique = null; renderHorarios(); };
 $('#cData').onchange = () => { ultimoClique = null; renderHorarios(); };
-
 $('#btnSalvarComp').onclick = async () => {
   const titulo = $('#cTitulo').value.trim();
   if (!titulo){ alert('Informe o nome do compromisso.'); return; }
@@ -996,11 +935,9 @@ $('#btnSalvarComp').onclick = async () => {
   if (!profId){ alert('Cadastre um profissional primeiro.'); return; }
   const diaInteiro = $('#cDiaInteiro').checked;
   if (!diaInteiro && estado.horasSel.length === 0){ alert('Selecione pelo menos um horário.'); return; }
-
   const lista = diaInteiro ? [] : [...estado.horasSel].sort();
   const quem = nomeUsuarioLogado();
   const agora = new Date().toISOString();
-
   const payload = {
     titulo, profissional_id: profId, data: $('#cData').value,
     hora: lista.length ? lista[0] : null,
@@ -1009,7 +946,6 @@ $('#btnSalvarComp').onclick = async () => {
     projeto_id: estado.projetosSel.length ? estado.projetosSel[0] : null,
     observacoes: $('#cObs').value.trim() || null
   };
-
   let error;
   if (estado.editando){
     payload.alterado_por = quem;
@@ -1025,7 +961,6 @@ $('#btnSalvarComp').onclick = async () => {
   await carregarCompromissos();
   renderTudo();
 };
-
 $('#btnExcluirComp').onclick = async () => {
   if (!estado.editando) return;
   if (!confirm('Excluir o compromisso "' + estado.editando.titulo + '"?')) return;
@@ -1035,19 +970,16 @@ $('#btnExcluirComp').onclick = async () => {
   await carregarCompromissos();
   renderTudo();
 };
-
 function renderCores(){
   const box = $('#pCores');
   box.innerHTML = CORES.map(c => `<button type="button" data-cor="${c}" class="${estado.corSel===c?'sel':''}" style="background:${c}"></button>`).join('');
   box.querySelectorAll('[data-cor]').forEach(b => b.onclick = () => { estado.corSel = b.dataset.cor; renderCores(); });
 }
-
 function renderCoresProj(){
   const box = $('#jCores');
   box.innerHTML = CORES_PROJ.map(c => `<button type="button" data-corproj="${c}" class="${estado.corProjSel===c?'sel':''}" style="background:${c}"></button>`).join('');
   box.querySelectorAll('[data-corproj]').forEach(b => b.onclick = () => { estado.corProjSel = b.dataset.corproj; renderCoresProj(); });
 }
-
 $('#btnAddProf').onclick = () => {
   $('#pNome').value = '';
   $('#pSetor').value = '';
@@ -1055,7 +987,6 @@ $('#btnAddProf').onclick = () => {
   renderCores();
   $('#modalProf').classList.add('aberto');
 };
-
 $('#btnSalvarProf').onclick = async () => {
   const nome = $('#pNome').value.trim();
   if (!nome){ alert('Informe o nome do profissional.'); return; }
@@ -1066,17 +997,14 @@ $('#btnSalvarProf').onclick = async () => {
   fecharModais();
   await carregarTudo();
 };
-
 function abrirModalProj(proj){
   estado.editandoProj = proj || null;
-
   $('#tituloModalProj').textContent = proj ? 'Editar projeto' : 'Cadastrar projeto';
   $('#btnSalvarProj').textContent = proj ? 'Salvar alterações' : 'Salvar projeto';
   $('#btnExcluirProj').style.display = proj ? 'flex' : 'none';
-
   $('#jNome').value = proj ? proj.nome : '';
   $('#jEntrega').value = proj ? (proj.entrega || '') : '';
-
+  $('#jStatus').value = proj ? (proj.status || 'ativo') : 'ativo';
   if (proj){
     estado.corProjSel = proj.cor;
     const nomes = (proj.responsaveis || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -1088,33 +1016,41 @@ function abrirModalProj(proj){
     estado.responsaveisSel = [];
     $('#blocoAuditoriaProj').style.display = 'none';
   }
-
   renderCoresProj();
   renderResponsaveisChecklist();
   $('#modalProj').classList.add('aberto');
 }
-
+$('#btnVerConcluidos').onclick = () => {
+  estado.vendoConcluidos = !estado.vendoConcluidos;
+  renderListaProj();
+};
 $('#btnAddProj').onclick = () => abrirModalProj(null);
-
 $('#btnSalvarProj').onclick = async () => {
   const nome = $('#jNome').value.trim();
   if (!nome){ alert('Informe o nome do projeto.'); return; }
-
   const nomes = estado.responsaveisSel
     .map(id => estado.profissionais.find(p => p.id === id))
     .filter(Boolean)
     .map(p => p.nome);
-
   const quem = nomeUsuarioLogado();
   const agora = new Date().toISOString();
-
+  const novoStatus = $('#jStatus').value;
   const payload = {
     nome,
     responsaveis: nomes.length ? nomes.join(', ') : null,
     entrega: $('#jEntrega').value || null,
-    cor: estado.corProjSel
+    cor: estado.corProjSel,
+    status: novoStatus
   };
-
+  if (novoStatus === 'concluido'){
+    if (!estado.editandoProj || (estado.editandoProj.status || 'ativo') !== 'concluido'){
+      payload.concluido_por = quem;
+      payload.concluido_em = agora;
+    }
+  } else {
+    payload.concluido_por = null;
+    payload.concluido_em = null;
+  }
   let error;
   if (estado.editandoProj){
     payload.alterado_por = quem;
@@ -1129,7 +1065,6 @@ $('#btnSalvarProj').onclick = async () => {
   fecharModais();
   await carregarTudo();
 };
-
 $('#btnExcluirProj').onclick = async () => {
   if (!estado.editandoProj) return;
   if (!confirm('Remover o projeto "' + estado.editandoProj.nome + '"? Os compromissos ficarão sem projeto.')) return;
@@ -1138,7 +1073,6 @@ $('#btnExcluirProj').onclick = async () => {
   fecharModais();
   await carregarTudo();
 };
-
 $('#btnToggleProj').onclick = () => {
   estado.painelRecolhido = !estado.painelRecolhido;
   const painel = $('#painelProj');
@@ -1146,18 +1080,15 @@ $('#btnToggleProj').onclick = () => {
   $('#btnToggleProj').title = estado.painelRecolhido ? 'Mostrar projetos' : 'Esconder projetos';
   localStorage.setItem('agenda_painel_proj', estado.painelRecolhido ? '1' : '0');
 };
-
 function fecharModais(){ document.querySelectorAll('.overlay').forEach(o => o.classList.remove('aberto')); }
 document.querySelectorAll('[data-fechar]').forEach(b => b.onclick = fecharModais);
 document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) fecharModais(); }));
-
 $('#btnNovo').onclick = () => abrirModalComp(null, estado.profissionais[0]?.id, null);
 $('#diaAnt').onclick = () => { const d = new Date(estado.dataSel); d.setDate(d.getDate() - (estado.visao === 'dia' ? 1 : 7)); estado.dataSel = d; renderTudo(); };
 $('#diaProx').onclick = () => { const d = new Date(estado.dataSel); d.setDate(d.getDate() + (estado.visao === 'dia' ? 1 : 7)); estado.dataSel = d; renderTudo(); };
 $('#btnHoje').onclick = () => { estado.dataSel = new Date(); renderTudo(); };
 $('#mesAnt').onclick = () => { estado.mesMini = new Date(estado.mesMini.getFullYear(), estado.mesMini.getMonth()-1, 1); renderMiniCal(); };
 $('#mesProx').onclick = () => { estado.mesMini = new Date(estado.mesMini.getFullYear(), estado.mesMini.getMonth()+1, 1); renderMiniCal(); };
-
 document.querySelectorAll('.seg button').forEach(b => {
   b.onclick = () => {
     document.querySelectorAll('.seg button').forEach(x => x.classList.remove('ativo'));
@@ -1166,27 +1097,22 @@ document.querySelectorAll('.seg button').forEach(b => {
     renderTudo();
   };
 });
-
 $('#btnAtualizar').onclick = carregarTudo;
-
 $('#busca').oninput = e => {
   const q = e.target.value.toLowerCase().trim();
   if (!q){ renderGrade(); return; }
   const achados = estado.compromissos.filter(c => c.titulo.toLowerCase().includes(q));
   if (achados.length === 1){ estado.dataSel = parseISO(achados[0].data); renderTudo(); }
 };
-
 function esc(s){
   return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
-
 (function init(){
   if (localStorage.getItem('agenda_painel_proj') === '1'){
     estado.painelRecolhido = true;
     $('#painelProj').classList.add('recolhido');
     $('#btnToggleProj').title = 'Mostrar projetos';
   }
-
   const salvo = sessionStorage.getItem('agenda_user');
   if (salvo){ try { estado.usuario = JSON.parse(salvo); entrarNoApp(); } catch(e){} }
 })();
