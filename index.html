@@ -62,8 +62,6 @@
   .prof-item .nome{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;padding:2px 0}
   .prof-item .nome:hover{color:var(--laranja-esc)}
   .prof-item .setor{font-size:11px;color:var(--txt2)}
-  .btn-del{color:#d1d5db;font-size:14px;padding:0 2px;flex-shrink:0}
-  .btn-del:hover{color:#dc2626}
   main{flex:1;display:flex;flex-direction:column;overflow:hidden}
   .toolbar{background:#fff;border-bottom:1px solid var(--borda);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .nav-data{display:flex;align-items:center;gap:4px}
@@ -94,6 +92,10 @@
   .evento .h{opacity:.85;font-size:10px}
   .evento .lapis{position:absolute;top:3px;right:3px;font-size:10px;opacity:0;transition:.12s}
   .evento:hover .lapis{opacity:.9}
+  .evento.realizado{background:#d1d5db !important;color:#4b5563;opacity:.85}
+  .evento .btn-check{position:absolute;bottom:2px;right:2px;background:rgba(255,255,255,.3);color:#fff;border-radius:4px;padding:0 4px;font-size:10px;font-weight:700;line-height:1.4}
+  .evento .btn-check:hover{background:rgba(255,255,255,.55)}
+  .evento.realizado .btn-check{background:rgba(255,255,255,.6);color:#374151}
   .vazio-msg{padding:40px;text-align:center;color:var(--txt2)}
   .painel-proj{width:270px;background:#fff;border-left:1px solid var(--borda);padding:14px;overflow-y:auto;flex-shrink:0;transition:width .2s,padding .2s}
   .painel-proj.recolhido{width:44px;padding:14px 6px;overflow:hidden}
@@ -160,9 +162,37 @@
   .proj-opt .pent{font-size:11px;color:var(--txt2)}
   .sem-proj{font-size:12px;color:#9ca3af;padding:8px 6px}
   .aviso-proj{font-size:11px;color:var(--txt2);margin-top:6px}
+  .aviso-recorrencia{font-size:11px;color:var(--laranja-esc);font-weight:600;margin-top:6px;min-height:16px}
   .auditoria{background:#f9fafb;border:1px solid var(--borda);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--txt2);line-height:1.6;margin-top:4px}
   .auditoria b{color:var(--txt);font-weight:600}
   .auditoria .linha{display:flex;gap:6px;align-items:baseline}
+  #areaImpressao{display:none}
+  @media print{
+    @page{size:A4 landscape;margin:8mm}
+    body{background:#fff}
+    #telaLogin,#app{display:none !important}
+    #areaImpressao{display:block !important}
+    .imp-topo{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #111;padding-bottom:6px;margin-bottom:10px}
+    .imp-topo h1{font-size:16px;margin:0}
+    .imp-topo .sub{font-size:11px;color:#555}
+    .imp-corpo{display:flex;gap:10px;align-items:flex-start}
+    .imp-grade{flex:1}
+    .imp-grade table{border-collapse:collapse;width:100%;table-layout:fixed}
+    .imp-grade th,.imp-grade td{border:1px solid #bbb;font-size:9px;padding:2px 3px;vertical-align:top}
+    .imp-grade th{background:#f0f0f0;font-weight:700;text-align:center}
+    .imp-grade td.hora{background:#f7f7f7;font-weight:600;text-align:center;width:42px;font-size:8px}
+    .imp-grade td.dia{height:26px;position:relative}
+    .imp-ev{background:#e8e8e8;border-left:3px solid #555;padding:1px 3px;margin-bottom:1px;font-size:8px;line-height:1.25;border-radius:2px}
+    .imp-ev b{display:block;font-size:8px}
+    .imp-ev span{color:#444}
+    .imp-projs{width:210px;flex-shrink:0}
+    .imp-projs h2{font-size:11px;margin:0 0 6px;border-bottom:1px solid #999;padding-bottom:3px}
+    .imp-proj{border:1px solid #bbb;border-left:4px solid #666;border-radius:3px;padding:4px 5px;margin-bottom:5px;font-size:8px;line-height:1.35}
+    .imp-proj .n{font-weight:700;font-size:9px;margin-bottom:2px}
+    .imp-proj .l{color:#333}
+    .imp-rodape{margin-top:8px;border-top:1px solid #ccc;padding-top:4px;font-size:8px;color:#666;display:flex;justify-content:space-between}
+    .imp-vazio{font-size:9px;color:#777;padding:6px}
+  }
 </style>
 </head>
 <body>
@@ -216,6 +246,7 @@
         </div>
         <div class="spacer"></div>
         <button class="btn-cinza" id="btnAtualizar">↻ Atualizar</button>
+        <button class="btn-cinza" id="btnImprimir">🖨 Imprimir</button>
       </div>
       <div class="grade-wrap"><div class="grade" id="grade"></div></div>
     </main>
@@ -233,6 +264,7 @@
     </div>
   </div>
 </div>
+<div id="areaImpressao"></div>
 <div class="overlay" id="modalComp">
   <div class="modal">
     <div class="modal-topo"><h2 id="tituloModalComp">Novo compromisso</h2><button class="fechar" data-fechar>×</button></div>
@@ -260,6 +292,16 @@
         <label>Data</label>
         <input type="date" id="cData" />
         <label class="check"><input type="checkbox" id="cDiaInteiro" /> Dia inteiro</label>
+      </div>
+      <div class="campo">
+        <label>Repetição</label>
+        <select id="cRecorrencia">
+          <option value="">Não repetir</option>
+          <option value="diario">Diário</option>
+          <option value="semanal">Semanal</option>
+          <option value="mensal">Mensal</option>
+        </select>
+        <div class="aviso-recorrencia" id="avisoRecorrencia"></div>
       </div>
       <div class="campo" id="blocoHorario">
         <label>Horário <span style="text-transform:none;font-weight:400;color:#9ca3af">(clique no início e no fim para preencher o intervalo)</span></label>
@@ -390,6 +432,13 @@ function htmlAuditoria(reg){
   if (reg.concluido_por){
     html += `<div class="linha"><b>Concluído por:</b> ${esc(reg.concluido_por)}${reg.concluido_em ? ' · ' + formatarDataHora(reg.concluido_em) : ''}</div>`;
   }
+  if (reg.realizado_por){
+    html += `<div class="linha"><b>Realizado por:</b> ${esc(reg.realizado_por)}${reg.realizado_em ? ' · ' + formatarDataHora(reg.realizado_em) : ''}</div>`;
+  }
+  if (reg.recorrencia){
+    const nomes = { diario: 'Diário', semanal: 'Semanal', mensal: 'Mensal' };
+    html += `<div class="linha"><b>Repetição:</b> ${nomes[reg.recorrencia] || reg.recorrencia}${reg.recorrencia_fim ? ' até ' + formatarData(reg.recorrencia_fim) : ''}</div>`;
+  }
   return html;
 }
 $('#formLogin').addEventListener('submit', async e => {
@@ -492,7 +541,6 @@ function renderListaProf(){
       <input type="checkbox" ${marcado?'checked':''} data-filtro="${p.id}" />
       <span class="dot" style="background:${p.cor}"></span>
       <div class="nome" data-nomeprof="${p.id}" title="Clique para ver só este">${esc(p.nome)}<div class="setor">${esc(p.setor || 'Sem setor')}</div></div>
-      <button class="btn-del" data-del="${p.id}" title="Remover">×</button>
     </div>`;
   }).join('');
   box.querySelectorAll('[data-filtro]').forEach(c => {
@@ -511,13 +559,6 @@ function renderListaProf(){
       const id = el.dataset.nomeprof;
       estado.profsMarcados = [id];
       renderListaProf(); renderGrade(); renderListaProj();
-    };
-  });
-  box.querySelectorAll('[data-del]').forEach(b => {
-    b.onclick = async () => {
-      if (!confirm('Remover este profissional e todos os seus compromissos?')) return;
-      await db.from('profissionais').update({ ativo: false }).eq('id', b.dataset.del);
-      await carregarTudo();
     };
   });
   atualizarBotaoTodos();
@@ -567,7 +608,16 @@ function renderListaProj(){
   const marcados = profissionaisMarcados();
   const filtrando = marcados.length > 0 && marcados.length < estado.profissionais.length;
   const btnConc = $('#btnVerConcluidos');
-  if (btnConc) btnConc.classList.toggle('ativo', estado.vendoConcluidos);
+  if (btnConc){
+    btnConc.classList.toggle('ativo', estado.vendoConcluidos);
+    if (estado.vendoConcluidos){
+      btnConc.innerHTML = '← Ativos';
+      btnConc.title = 'Voltar para projetos ativos';
+    } else {
+      btnConc.innerHTML = '✓ Concluídos';
+      btnConc.title = 'Ver projetos concluídos';
+    }
+  }
   if (filtrando){
     const nomes = estado.profissionais.filter(p => marcados.includes(p.id)).map(p => p.nome).join(', ');
     aviso.innerHTML = `<div class="filtro-aviso"><span>Mostrando projetos de: <b>${esc(nomes)}</b></span><button id="limparFiltroProj">ver todos</button></div>`;
@@ -769,22 +819,48 @@ function renderGradeSemana(grade, profs){
 }
 function criarEvento(c, p, altura, hs){
   const el = document.createElement('div');
-  el.className = 'evento';
+  el.className = 'evento' + (c.realizado ? ' realizado' : '');
   const proj = projetoDoCompromisso(c);
-  el.style.background = proj ? proj.cor : (p ? p.cor : '#f97316');
+  if (!c.realizado){
+    el.style.background = proj ? proj.cor : (p ? p.cor : '#f97316');
+  }
   el.style.height = (altura - 3) + 'px';
-  el.title = 'Clique para editar ou excluir';
+  el.title = c.realizado
+    ? 'Realizado por ' + (c.realizado_por || '—') + ' — clique para editar'
+    : 'Clique para editar ou excluir';
   const faixa = c.dia_inteiro
     ? 'Dia inteiro'
     : (hs && hs.length > 1 ? hs[0] + ' – ' + hs[hs.length-1] : (hs && hs[0]) || '');
   const nomeProf = p ? p.nome : '';
+  const iconeRec = c.recorrencia ? ' 🔁' : '';
   el.innerHTML =
     `<span class="lapis">✎</span>` +
-    `<div class="t">${esc(c.titulo)}</div>` +
+    `<div class="t">${esc(c.titulo)}${iconeRec}</div>` +
     (nomeProf ? `<div class="p">${esc(nomeProf)}</div>` : '') +
     (proj ? `<div class="pr">📁 ${esc(proj.nome)}</div>` : '') +
-    `<div class="h">${faixa}</div>`;
-  el.onclick = ev => { ev.stopPropagation(); abrirModalComp(c, null, null); };
+    `<div class="h">${faixa}</div>` +
+    `<button class="btn-check" data-check="${c.id}" title="${c.realizado ? 'Desmarcar realizado' : 'Marcar como realizado'}">${c.realizado ? '✓' : '☐'}</button>`;
+  el.onclick = ev => {
+    if (ev.target.closest('[data-check]')) return;
+    ev.stopPropagation();
+    abrirModalComp(c, null, null);
+  };
+  const btn = el.querySelector('[data-check]');
+  btn.onclick = async ev => {
+    ev.stopPropagation();
+    const novo = !c.realizado;
+    const msg = novo
+      ? 'Marcar o compromisso "' + c.titulo + '" como realizado?'
+      : 'Desmarcar o compromisso "' + c.titulo + '"?';
+    if (!confirm(msg)) return;
+    const payload = novo
+      ? { realizado: true, realizado_por: nomeUsuarioLogado(), realizado_em: new Date().toISOString() }
+      : { realizado: false, realizado_por: null, realizado_em: null };
+    const { error } = await db.from('compromissos').update(payload).eq('id', c.id);
+    if (error){ alert('Erro ao atualizar: ' + error.message); return; }
+    await carregarCompromissos();
+    renderTudo();
+  };
   return el;
 }
 function renderSelectProf(){
@@ -897,6 +973,49 @@ function renderHorarios(){
   else if (n === 1) cont.textContent = '1 horário selecionado: ' + estado.horasSel[0];
   else cont.textContent = n + ' horários selecionados: ' + estado.horasSel[0] + ' – ' + estado.horasSel[n-1];
 }
+function gerarDatasRecorrencia(dataInicial, tipo, dataFim){
+  const datas = [];
+  const d = parseISO(dataInicial);
+  const fim = new Date(dataFim);
+  if (tipo === 'diario'){
+    const cur = new Date(d);
+    while (cur <= fim){
+      datas.push(iso(cur));
+      cur.setDate(cur.getDate() + 1);
+    }
+  } else if (tipo === 'semanal'){
+    const cur = new Date(d);
+    while (cur <= fim){
+      datas.push(iso(cur));
+      cur.setDate(cur.getDate() + 7);
+    }
+  } else if (tipo === 'mensal'){
+    const diaBase = d.getDate();
+    let ano = d.getFullYear();
+    let mes = d.getMonth();
+    while (true){
+      const ultimoDia = new Date(ano, mes + 1, 0).getDate();
+      const dia = Math.min(diaBase, ultimoDia);
+      const cur = new Date(ano, mes, dia);
+      if (cur > fim) break;
+      datas.push(iso(cur));
+      mes++;
+      if (mes > 11){ mes = 0; ano++; }
+    }
+  }
+  return datas;
+}
+function atualizarAvisoRecorrencia(){
+  const v = $('#cRecorrencia').value;
+  const aviso = $('#avisoRecorrencia');
+  if (!v){ aviso.textContent = ''; return; }
+  const dataBase = $('#cData').value || iso(estado.dataSel);
+  const dt = parseISO(dataBase);
+  const fim = new Date(dt.getFullYear(), 11, 31);
+  const qtd = gerarDatasRecorrencia(dataBase, v, fim).length;
+  aviso.textContent = qtd + ' ocorrências serão criadas até 31/12/' + dt.getFullYear() + '.';
+}
+$('#cRecorrencia').onchange = atualizarAvisoRecorrencia;
 function abrirModalComp(comp, profId, hora, dataStr){
   estado.editando = comp || null;
   estado.horasSel = comp ? horasDoCompromisso(comp) : (hora ? [hora] : []);
@@ -909,6 +1028,8 @@ function abrirModalComp(comp, profId, hora, dataStr){
   $('#cObs').value = comp ? (comp.observacoes || '') : '';
   $('#cData').value = comp ? comp.data : (dataStr || iso(estado.dataSel));
   $('#cDiaInteiro').checked = comp ? !!comp.dia_inteiro : false;
+  $('#cRecorrencia').value = comp ? (comp.recorrencia || '') : '';
+  $('#avisoRecorrencia').textContent = '';
   if (comp){
     $('#blocoAuditoriaComp').style.display = 'block';
     $('#auditoriaComp').innerHTML = htmlAuditoria(comp);
@@ -927,7 +1048,7 @@ $('#cDiaInteiro').onchange = e => {
   $('#blocoHorario').style.display = e.target.checked ? 'none' : 'block';
 };
 $('#cProf').onchange = () => { ultimoClique = null; renderHorarios(); };
-$('#cData').onchange = () => { ultimoClique = null; renderHorarios(); };
+$('#cData').onchange = () => { ultimoClique = null; renderHorarios(); atualizarAvisoRecorrencia(); };
 $('#btnSalvarComp').onclick = async () => {
   const titulo = $('#cTitulo').value.trim();
   if (!titulo){ alert('Informe o nome do compromisso.'); return; }
@@ -938,33 +1059,78 @@ $('#btnSalvarComp').onclick = async () => {
   const lista = diaInteiro ? [] : [...estado.horasSel].sort();
   const quem = nomeUsuarioLogado();
   const agora = new Date().toISOString();
-  const payload = {
-    titulo, profissional_id: profId, data: $('#cData').value,
+  const dataBase = $('#cData').value;
+  const recorrencia = $('#cRecorrencia').value;
+
+  const base = {
+    titulo, profissional_id: profId,
     hora: lista.length ? lista[0] : null,
     horarios: lista,
     dia_inteiro: diaInteiro,
     projeto_id: estado.projetosSel.length ? estado.projetosSel[0] : null,
     observacoes: $('#cObs').value.trim() || null
   };
-  let error;
+
   if (estado.editando){
-    payload.alterado_por = quem;
-    payload.alterado_em = agora;
-    ({ error } = await db.from('compromissos').update(payload).eq('id', estado.editando.id));
-  } else {
-    payload.criado_por = quem;
-    payload.criado_em_por = agora;
-    ({ error } = await db.from('compromissos').insert(payload));
+    const payload = { ...base, data: dataBase, alterado_por: quem, alterado_em: agora };
+    const { error } = await db.from('compromissos').update(payload).eq('id', estado.editando.id);
+    if (error){ alert('Erro ao salvar: ' + error.message); return; }
+    fecharModais();
+    await carregarCompromissos();
+    renderTudo();
+    return;
   }
+
+  if (!recorrencia){
+    const payload = { ...base, data: dataBase, criado_por: quem, criado_em_por: agora };
+    const { error } = await db.from('compromissos').insert(payload);
+    if (error){ alert('Erro ao salvar: ' + error.message); return; }
+    fecharModais();
+    await carregarCompromissos();
+    renderTudo();
+    return;
+  }
+
+  const dtBase = parseISO(dataBase);
+  const fimAno = new Date(dtBase.getFullYear(), 11, 31);
+  const datas = gerarDatasRecorrencia(dataBase, recorrencia, fimAno);
+  if (datas.length === 0){ alert('Nenhuma data gerada.'); return; }
+
+  const recId = (crypto.randomUUID ? crypto.randomUUID() : 'rec-' + Date.now() + '-' + Math.random().toString(16).slice(2));
+  const linhas = datas.map(d => ({
+    ...base,
+    data: d,
+    recorrencia,
+    recorrencia_id: recId,
+    recorrencia_fim: iso(fimAno),
+    criado_por: quem,
+    criado_em_por: agora
+  }));
+
+  const { error } = await db.from('compromissos').insert(linhas);
   if (error){ alert('Erro ao salvar: ' + error.message); return; }
   fecharModais();
   await carregarCompromissos();
   renderTudo();
+  alert(datas.length + ' compromissos criados até 31/12/' + dtBase.getFullYear() + '.');
 };
 $('#btnExcluirComp').onclick = async () => {
   if (!estado.editando) return;
-  if (!confirm('Excluir o compromisso "' + estado.editando.titulo + '"?')) return;
-  const { error } = await db.from('compromissos').delete().eq('id', estado.editando.id);
+  const c = estado.editando;
+  let soEsta = true;
+  if (c.recorrencia_id){
+    soEsta = confirm(
+      'Este compromisso faz parte de uma série repetida.\n\n' +
+      'OK = excluir SOMENTE esta ocorrência\n' +
+      'Cancelar = excluir TODAS as ocorrências da série'
+    );
+  } else {
+    if (!confirm('Excluir o compromisso "' + c.titulo + '"?')) return;
+  }
+  const q = db.from('compromissos').delete();
+  const { error } = soEsta
+    ? await q.eq('id', c.id)
+    : await q.eq('recorrencia_id', c.recorrencia_id);
   if (error){ alert('Erro ao excluir: ' + error.message); return; }
   fecharModais();
   await carregarCompromissos();
@@ -1079,6 +1245,78 @@ $('#btnToggleProj').onclick = () => {
   painel.classList.toggle('recolhido', estado.painelRecolhido);
   $('#btnToggleProj').title = estado.painelRecolhido ? 'Mostrar projetos' : 'Esconder projetos';
   localStorage.setItem('agenda_painel_proj', estado.painelRecolhido ? '1' : '0');
+};
+function montarImpressao(){
+  const profs = profissionaisVisiveis();
+  const ini = inicioSemana(estado.dataSel);
+  const dias = [];
+  for (let i = 0; i < 7; i++){ const d = new Date(ini); d.setDate(d.getDate()+i); dias.push(d); }
+  const hoje = new Date();
+  let cab = '<tr><th style="width:42px">Hora</th>';
+  dias.forEach(d => {
+    cab += `<th>${DIAS[d.getDay()].slice(0,3)}<br>${pad(d.getDate())}/${pad(d.getMonth()+1)}</th>`;
+  });
+  cab += '</tr>';
+  let linhas = '';
+  HORAS.forEach(h => {
+    linhas += `<tr><td class="hora">${h}</td>`;
+    dias.forEach(d => {
+      const doDia = estado.compromissos.filter(c =>
+        c.data === iso(d) &&
+        profs.some(p => p.id === c.profissional_id) &&
+        (c.dia_inteiro || horasDoCompromisso(c).includes(h))
+      );
+      let conteudo = '';
+      doDia.forEach(c => {
+        const p = profs.find(x => x.id === c.profissional_id);
+        const proj = projetoDoCompromisso(c);
+        const hs = horasDoCompromisso(c);
+        const faixa = c.dia_inteiro ? 'Dia inteiro' : (hs.length > 1 ? hs[0] + '–' + hs[hs.length-1] : hs[0]);
+        conteudo += `<div class="imp-ev" style="border-left-color:${c.realizado ? '#9ca3af' : (proj ? proj.cor : (p ? p.cor : '#666'))}">` +
+          `<b>${c.realizado ? '✓ ' : ''}${esc(c.titulo)}</b>` +
+          `<span>${esc(p ? p.nome : '')} · ${faixa}</span>` +
+          (proj ? `<span>📁 ${esc(proj.nome)}</span>` : '') +
+          `</div>`;
+      });
+      linhas += `<td class="dia">${conteudo}</td>`;
+    });
+    linhas += '</tr>';
+  });
+  const projs = projetosVisiveis();
+  let projsHtml = '';
+  if (projs.length === 0){
+    projsHtml = '<div class="imp-vazio">Nenhum projeto ativo.</div>';
+  } else {
+    projsHtml = projs.map(p => {
+      const entrega = p.entrega ? formatarData(p.entrega) : 'Sem data';
+      return `<div class="imp-proj" style="border-left-color:${p.cor}">
+        <div class="n">${esc(p.nome)}</div>
+        <div class="l"><b>Resp.:</b> ${esc(p.responsaveis || '—')}</div>
+        <div class="l"><b>Entrega:</b> ${entrega}</div>
+      </div>`;
+    }).join('');
+  }
+  const fim = dias[6];
+  const periodo = pad(ini.getDate()) + '/' + pad(ini.getMonth()+1) + ' a ' +
+                  pad(fim.getDate()) + '/' + pad(fim.getMonth()+1) + '/' + fim.getFullYear();
+  const nomesProf = profs.map(p => p.nome).join(', ') || 'Todos';
+  $('#areaImpressao').innerHTML = `
+    <div class="imp-topo">
+      <h1>Agenda da Semana</h1>
+      <div class="sub">${periodo} · Profissionais: ${esc(nomesProf)}</div>
+    </div>
+    <div class="imp-corpo">
+      <div class="imp-grade"><table>${cab}${linhas}</table></div>
+      <div class="imp-projs"><h2>Projetos</h2>${projsHtml}</div>
+    </div>
+    <div class="imp-rodape">
+      <span>Impresso em ${pad(hoje.getDate())}/${pad(hoje.getMonth()+1)}/${hoje.getFullYear()} às ${pad(hoje.getHours())}:${pad(hoje.getMinutes())}</span>
+      <span>${esc(nomeUsuarioLogado())}</span>
+    </div>`;
+}
+$('#btnImprimir').onclick = () => {
+  montarImpressao();
+  window.print();
 };
 function fecharModais(){ document.querySelectorAll('.overlay').forEach(o => o.classList.remove('aberto')); }
 document.querySelectorAll('[data-fechar]').forEach(b => b.onclick = fecharModais);
