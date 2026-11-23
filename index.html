@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -14,7 +15,7 @@
 <style>
   :root{--laranja:#f97316;--laranja-esc:#ea580c;--bg:#f7f7f8;--borda:#e5e7eb;--txt:#1f2937;--txt2:#6b7280}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}/
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
   button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:14px}
   input,select,textarea{font-family:inherit;font-size:14px}
   #telaLogin{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fff7ed,#f7f7f8);z-index:200}
@@ -211,8 +212,8 @@
 <div id="telaLogin" style="display:none">
   <form class="login-box" id="formLogin">
     <h1>Agenda</h1>
-    <p>Acesse com seu e-mail e senha</p>
-    <div class="campo"><label>E-mail</label><input id="inEmail" type="email" autocomplete="username" required></div>
+    <p>Acesse com seu usuário e senha</p>
+    <div class="campo"><label>Usuário</label><input id="inUsuario" autocomplete="username" required></div>
     <div class="campo"><label>Senha</label><input id="inSenha" type="password" autocomplete="current-password" required></div>
     <button class="btn-laranja" type="submit">Entrar</button>
     <div class="erro" id="erroLogin"></div>
@@ -442,7 +443,7 @@ function projetoDoCompromisso(c){
 }
 function nomeUsuarioLogado(){
   if (!estado.usuario) return 'Desconhecido';
-  return estado.usuario.nome || estado.usuario.email || 'Desconhecido';
+  return estado.usuario.nome || estado.usuario.usuario || 'Desconhecido';
 }
 function formatarDataHora(s){
   if (!s) return '';
@@ -479,45 +480,37 @@ function esc(s){
   return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
-/* ================= LOGIN (Supabase Auth) ================= */
+/* ================= LOGIN (RPC na tabela usuarios) ================= */
 $('#formLogin').addEventListener('submit', async e => {
   e.preventDefault();
   const erro = $('#erroLogin');
   erro.textContent = '';
 
-  const email = $('#inEmail').value.trim();
+  const usuario = $('#inUsuario').value.trim();
   const senha = $('#inSenha').value;
 
-  const { data: authData, error: authError } = await db.auth.signInWithPassword({
-    email: email,
-    password: senha
+  if (!usuario || !senha){ erro.textContent = 'Informe usuário e senha.'; return; }
+
+  const { data, error } = await db.rpc('login_usuario', {
+    p_usuario: usuario,
+    p_senha: senha
   });
 
-  if (authError){
-    erro.textContent = 'Não foi possível entrar: ' + authError.message;
+  if (error){
+    erro.textContent = 'Erro ao conectar: ' + error.message;
+    return;
+  }
+  if (!data || data.length === 0){
+    erro.textContent = 'Usuário ou senha inválidos.';
     return;
   }
 
-  const user = authData.user;
-  let perfilRow = null;
-
-  const { data: pData, error: pError } = await db
-    .from('perfis')
-    .select('id, nome, email, perfil')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (pError){
-    erro.textContent = 'Erro ao ler perfil: ' + pError.message;
-    return;
-  }
-  perfilRow = pData;
-
+  const row = data[0];
   estado.usuario = {
-    id: user.id,
-    email: user.email,
-    nome: perfilRow?.nome || user.email,
-    perfil: (perfilRow?.perfil || 'usuario')
+    id: row.id,
+    usuario: row.usuario,
+    nome: row.nome || row.usuario,
+    perfil: row.perfil || 'usuario'
   };
   estado.ehAdmin = (String(estado.usuario.perfil).toLowerCase() === 'admin');
 
@@ -525,8 +518,7 @@ $('#formLogin').addEventListener('submit', async e => {
   entrarNoApp();
 });
 
-$('#btnSair').addEventListener('click', async () => {
-  await db.auth.signOut();
+$('#btnSair').addEventListener('click', () => {
   sessionStorage.removeItem('agenda_user');
   estado.usuario = null;
   estado.ehAdmin = false;
@@ -538,7 +530,7 @@ $('#btnSair').addEventListener('click', async () => {
 function entrarNoApp(){
   $('#telaLogin').style.display = 'none';
   $('#app').style.display = 'flex';
-  const nome = estado.usuario.nome || estado.usuario.email || '—';
+  const nome = estado.usuario.nome || estado.usuario.usuario || '—';
   $('#nomeUser').textContent = nome;
   $('#avatarUser').textContent = nome.charAt(0).toUpperCase();
   if (!estado.ehAdmin){
@@ -568,10 +560,11 @@ async function carregarProfissionais(){
     estado.profissionais = todos;
   } else {
     const meu = norm(estado.usuario.nome);
-    const meuEmail = norm(estado.usuario.email);
-    estado.profissionais = todos.filter(p =>
-      norm(p.nome) === meu || norm(p.email) === meuEmail
-    );
+    estado.profissionais = todos.filter(p => norm(p.nome) === meu);
+    if (estado.profissionais.length === 0){
+      const login = norm(estado.usuario.usuario);
+      estado.profissionais = todos.filter(p => norm(p.nome) === login);
+    }
   }
   estado.profsMarcados = estado.profissionais.map(p => p.id);
 }
@@ -644,7 +637,7 @@ function renderMiniCal(){
 function renderListaProf(){
   const box = $('#listaProf');
   if (estado.profissionais.length === 0){
-    box.innerHTML = '<div style="font-size:12px;color:#9ca3af;padding:8px 6px">Nenhum profissional vinculado ao seu perfil. Verifique se existe um profissional com o mesmo nome ou e-mail do seu usuário.</div>';
+    box.innerHTML = '<div style="font-size:12px;color:#9ca3af;padding:8px 6px">Nenhum profissional vinculado ao seu usuário. Cadastre um profissional com o mesmo nome do seu usuário.</div>';
     atualizarBotaoTodos();
     return;
   }
@@ -1495,32 +1488,20 @@ $('#busca').oninput = e => {
   if (achados.length === 1){ estado.dataSel = parseISO(achados[0].data); renderTudo(); }
 };
 
-/* ================= INICIALIZAÇÃO ================= */
-(async function init(){
+(function init(){
   if (localStorage.getItem('agenda_painel_proj') === '1'){
     estado.painelRecolhido = true;
     $('#painelProj').classList.add('recolhido');
     $('#btnToggleProj').title = 'Mostrar projetos';
   }
-
-  const { data: sess } = await db.auth.getSession();
-  const user = sess?.session?.user;
-
-  if (user){
-    const { data: pData } = await db
-      .from('perfis')
-      .select('id, nome, email, perfil')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    estado.usuario = {
-      id: user.id,
-      email: user.email,
-      nome: pData?.nome || user.email,
-      perfil: (pData?.perfil || 'usuario')
-    };
-    estado.ehAdmin = (String(estado.usuario.perfil).toLowerCase() === 'admin');
-    entrarNoApp();
+  const salvo = sessionStorage.getItem('agenda_user');
+  if (salvo){
+    try {
+      estado.usuario = JSON.parse(salvo);
+      if (!estado.usuario.perfil) estado.usuario.perfil = 'usuario';
+      estado.ehAdmin = (String(estado.usuario.perfil).toLowerCase() === 'admin');
+      entrarNoApp();
+    } catch(e){}
   } else {
     $('#telaLogin').style.display = 'flex';
   }
@@ -1529,50 +1510,47 @@ $('#busca').oninput = e => {
 </body>
 </html>
 SQL necessário no Supabase
--- 1) Verificar se a tabela profissionais tem coluna email (necessária para o vínculo)
-alter table profissionais add column if not exists email text;
+-- 1) RPC de login: valida usuario + senha_hash no banco
+--    A senha é comparada com crypt() do pgcrypto.
+create extension if not exists pgcrypto;
 
--- 2) Preencher o email dos profissionais para o vínculo funcionar
---    (ajuste manualmente conforme os dados reais)
-update profissionais set email = 'lorrane@empresa.com' where nome = 'Lorrane';
+create or replace function login_usuario(p_usuario text, p_senha text)
+returns table (id uuid, usuario text, nome text, perfil text)
+language sql security definer as $$
+  select u.id, u.usuario, u.nome, u.perfil
+  from usuarios u
+  where u.usuario = p_usuario
+    and u.senha_hash = crypt(p_senha, u.senha_hash)
+  limit 1;
+$$;
 
--- 3) RLS na tabela perfis
-alter table perfis enable row level security;
+-- 2) Se a senha_hash NÃO estiver em bcrypt (ex.: texto puro ou md5),
+--    use esta versão alternativa:
+-- create or replace function login_usuario(p_usuario text, p_senha text)
+-- returns table (id uuid, usuario text, nome text, perfil text)
+-- language sql security definer as $$
+--   select u.id, u.usuario, u.nome, u.perfil
+--   from usuarios u
+--   where u.usuario = p_usuario and u.senha_hash = p_senha
+--   limit 1;
+-- $$;
 
-create policy perfis_select_own on perfis for select
-using (id = auth.uid());
+-- 3) Permissões para o front conseguir chamar a RPC
+grant execute on function login_usuario(text, text) to anon, authenticated;
 
-create policy perfis_admin_all on perfis for all
-using (exists (select 1 from perfis p where p.id = auth.uid() and p.perfil::text = 'admin'));
-
--- 4) RLS em profissionais
+-- 4) RLS nas tabelas de dados
 alter table profissionais enable row level security;
-
-create policy profissionais_read on profissionais for select
-using (auth.uid() is not null);
-
-create policy profissionais_admin_write on profissionais for all
-using (exists (select 1 from perfis p where p.id = auth.uid() and p.perfil::text = 'admin'));
-
--- 5) RLS em compromissos
 alter table compromissos enable row level security;
-
-create policy compromissos_admin_all on compromissos for all
-using (exists (select 1 from perfis p where p.id = auth.uid() and p.perfil::text = 'admin'));
-
-create policy compromissos_user_own on compromissos for all
-using (profissional_id in (
-  select pr.id from profissionais pr
-  where lower(trim(pr.nome)) = (select lower(trim(p.nome)) from perfis p where p.id = auth.uid())
-     or lower(trim(pr.email)) = (select lower(trim(p.email)) from perfis p where p.id = auth.uid())
-));
-
--- 6) RLS em projetos
 alter table projetos enable row level security;
 
-create policy projetos_admin_all on projetos for all
-using (exists (select 1 from perfis p where p.id = auth.uid() and p.perfil::text = 'admin'));
+-- Leitura liberada para quem está logado (o filtro por usuário é feito no front)
+create policy profissionais_read on profissionais for select using (true);
+create policy compromissos_all on compromissos for all using (true) with check (true);
+create policy projetos_all on projetos for all using (true) with check (true);
 
-create policy projetos_user_read on projetos for select
-using (auth.uid() is not null);
-Nota final: como agora o login usa Supabase Auth real (signInWithPassword), auth.uid() funciona e as políticas RLS acima passam a valer de verdade. O vínculo usuário→profissional é feito por nome ou e-mail normalizado, porque a tabela perfis não tem coluna profissional_id. Se quiser um vínculo mais robusto, crie a coluna profissional_id uuid references profissionais(id) em perfis e use-a no filtro.
+-- 5) Criar um usuário admin de teste (senha em bcrypt)
+insert into usuarios (usuario, senha_hash, nome, perfil)
+values ('admin', crypt('123456', gen_salt('bf')), 'Administrador', 'admin')
+on conflict do nothing;
+Nota final
+Nota final: como o login não usa Supabase Auth (auth.uid() é nulo), as políticas RLS com auth.uid() não funcionariam. Por isso as políticas acima liberam leitura/escrita para a chave anon, e o controle admin x usuário é feito no front (filtro por nome do profissional). Para segurança real, o ideal é migrar para Supabase Auth ou mover as operações para uma Edge Function com service role.
