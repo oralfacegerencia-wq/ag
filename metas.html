@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metas e Resultados</title>
+<script>
+  window.AGENDA_CONFIG = {
+    SUPABASE_URL: 'https://vhewfykxdfvdmvlklyfr.supabase.co',
+    SUPABASE_ANON_KEY: 'sb_publishable_FthxkMf4yDELMQ_S04xKrA_3OFDVJQF'
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{--laranja:#f97316;--laranja-esc:#ea580c;--bg:#f7f7f8;--borda:#e5e7eb;--txt:#1f2937;--txt2:#6b7280;--verde:#16a34a;--vermelho:#dc2626}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:14px}
+  input,select,textarea{font-family:inherit;font-size:13px}
+  #telaLogin{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(135deg,#fff7ed,#f7f7f8);z-index:200}
+  .login-box{background:#fff;padding:34px 30px;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.08);width:340px}
+  .login-box h1{font-size:19px;margin-bottom:4px}
+  .login-box p{color:var(--txt2);font-size:13px;margin-bottom:20px}
+  .campo{margin-bottom:12px}
+  .campo label{display:block;font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+  .campo input,.campo select,.campo textarea{width:100%;padding:9px 11px;border:1px solid var(--borda);border-radius:8px;outline:none;background:#fff}
+  .campo input:focus,.campo select:focus,.campo textarea:focus{border-color:var(--laranja);box-shadow:0 0 0 3px rgba(249,115,22,.12)}
+  .btn-laranja{width:100%;background:var(--laranja);color:#fff;padding:11px;border-radius:8px;font-weight:600}
+  .btn-laranja:hover{background:var(--laranja-esc)}
+  .erro{color:var(--vermelho);font-size:13px;margin-top:10px;min-height:18px}
+  #app{display:none;flex-direction:column;min-height:100vh}
+  header{background:#fff;border-bottom:1px solid var(--borda);padding:10px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  header h1{font-size:16px}
+  .badge-admin{font-size:10px;font-weight:800;letter-spacing:.06em;background:#111827;color:#fff;padding:4px 8px;border-radius:5px}
+  .link-agenda{color:var(--laranja-esc);font-weight:600;font-size:12px;text-decoration:none;background:#fff7ed;border:1px solid #fed7aa;padding:7px 11px;border-radius:7px}
+  .link-agenda:hover{background:#ffedd5}
+  .user-info{margin-left:auto;display:flex;align-items:center;gap:9px;font-size:13px}
+  .avatar{width:30px;height:30px;border-radius:50%;background:var(--laranja);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+  .btn-sair{color:var(--txt2);font-size:13px;padding:6px 10px;border-radius:6px}
+  .btn-sair:hover{background:var(--bg)}
+  .wrap{max-width:1280px;margin:0 auto;padding:16px;width:100%}
+  .barra{background:#fff;border:1px solid var(--borda);border-radius:12px;padding:12px 14px;display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .barra .campo{margin:0}
+  .barra .campo select,.barra .campo input{padding:8px 10px;min-width:110px}
+  .btn-cinza{padding:9px 14px;border:1px solid var(--borda);border-radius:8px;color:var(--txt);background:#fff}
+  .btn-cinza:hover{background:var(--bg)}
+  .btn-conf{padding:9px 16px;background:var(--laranja);color:#fff;border-radius:8px;font-weight:600}
+  .btn-conf:hover{background:var(--laranja-esc)}
+  .card{background:#fff;border:1px solid var(--borda);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--txt2);margin-bottom:12px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+  .kpi{background:#fff;border:1px solid var(--borda);border-radius:12px;padding:14px 16px}
+  .kpi .l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--txt2);margin-bottom:5px}
+  .kpi .v{font-size:23px;font-weight:700}
+  .kpi .s{font-size:11px;color:var(--txt2);margin-top:2px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{padding:8px 9px;border-bottom:1px solid var(--borda);text-align:center}
+  th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--txt2);background:#fafafa;font-weight:700}
+  th.ind,td.ind{text-align:left}
+  tr.grupo td{background:#eff6ff;color:#1e40af;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em;text-align:left}
+  td .res{font-weight:700;font-size:13px}
+  td .mta{font-size:10px;color:var(--txt2)}
+  td.melhor{background:#dcfce7}
+  td.pior{background:#fee2e2}
+  td .pct{display:inline-block;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#fff7ed;color:var(--laranja-esc);border:1px solid #fed7aa;margin-top:2px}
+  td .pct.ok{background:#dcfce7;color:#15803d;border-color:#bbf7d0}
+  td .pct.ruim{background:#fee2e2;color:#b91c1c;border-color:#fecaca}
+  .legenda{display:flex;gap:14px;font-size:11px;color:var(--txt2);margin-bottom:9px;flex-wrap:wrap}
+  .legenda i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:middle}
+  .vazio{color:#9ca3af;font-size:13px;padding:12px 2px}
+  .aviso{font-size:11px;color:var(--laranja-esc);background:#fff7ed;border:1px solid #fed7aa;border-radius:7px;padding:7px 9px;margin-bottom:10px;display:none}
+  @media print{
+    @page{size:A4 landscape;margin:8mm}
+    body{background:#fff}
+    header,.barra,#painelLancar,.no-print{display:none !important}
+    .wrap{max-width:none;padding:0}
+    .card{border:none;padding:0;margin-bottom:8px}
+    .kpi{border:1px solid #ccc}
+    th,td{font-size:8px;padding:3px 4px}
+  }
+</style>
+</head>
+<body>
+
+<div id="telaLogin">
+  <form class="login-box" id="formLogin">
+    <h1>Metas e Resultados</h1>
+    <p>Acesse com seu usuário e senha</p>
+    <div class="campo"><label>Usuário</label><input id="inUsuario" autocomplete="username" required></div>
+    <div class="campo"><label>Senha</label><input id="inSenha" type="password" autocomplete="current-password" required></div>
+    <button class="btn-laranja" type="submit">Entrar</button>
+    <div class="erro" id="erroLogin"></div>
+  </form>
+</div>
+
+<div id="app">
+  <header>
+    <h1>Dashboard de Reunião</h1>
+    <span class="badge-admin" id="badgeAdmin" style="display:none">ADMIN</span>
+    <a class="link-agenda" href="index.html">Agenda</a>
+    <div class="user-info">
+      <div class="avatar" id="avatarUser">A</div>
+      <span id="nomeUser">—</span>
+      <button class="btn-sair" id="btnSair">Sair</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="barra">
+      <div class="campo" id="boxSetor" style="display:none">
+        <label>Setor</label>
+        <select id="fSetor"><option value="">Todos</option></select>
+      </div>
+      <div class="campo" id="boxColab" style="display:none">
+        <label>Colaborador</label>
+        <select id="fColab"><option value="">Todos</option></select>
+      </div>
+      <div class="campo">
+        <label>Mês</label>
+        <select id="fMes"></select>
+      </div>
+      <div class="campo">
+        <label>Ano</label>
+        <select id="fAno"></select>
+      </div>
+      <button class="btn-conf" id="btnCarregar">Carregar</button>
+      <button class="btn-cinza" id="btnAtualizar" title="Recarregar dados">Atualizar</button>
+      <button class="btn-cinza" id="btnPdf" title="Imprimir ou salvar em PDF">PDF</button>
+    </div>
+
+    <div class="card" id="painelLancar">
+      <h2>Lançar meta e resultado da semana</h2>
+      <div class="aviso" id="avisoLancar"></div>
+      <div class="grid">
+        <div class="campo">
+          <label>Colaborador</label>
+          <select id="cProf"></select>
+        </div>
+        <div class="campo">
+          <label>Indicador</label>
+          <select id="cMetrica"></select>
+        </div>
+        <div class="campo">
+          <label>Semana</label>
+          <select id="cSemana">
+            <option value="1">Semana 1</option>
+            <option value="2">Semana 2</option>
+            <option value="3">Semana 3</option>
+            <option value="4">Semana 4</option>
+            <option value="5">Semana 5</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label>Meta da semana</label>
+          <input id="cMeta" type="number" step="0.01" min="0" placeholder="0">
+        </div>
+        <div class="campo">
+          <label>Resultado da semana</label>
+          <input id="cResultado" type="number" step="0.01" min="0" placeholder="0">
+        </div>
+      </div>
+      <div class="campo">
+        <label>Observações</label>
+        <textarea id="cObs" rows="2" placeholder="O que foi feito na semana"></textarea>
+      </div>
+      <div style="display:flex;gap:9px;flex-wrap:wrap">
+        <button class="btn-conf" id="btnSalvar">Salvar semana</button>
+        <button class="btn-cinza" id="btnLimpar">Limpar</button>
+        <button class="btn-cinza" id="btnNovaMetrica" style="display:none">+ Novo indicador</button>
+      </div>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="card">
+      <h2 id="tituloTabela">Comparação semanal</h2>
+      <div class="legenda">
+        <span><i style="background:#dcfce7"></i>Melhor semana</span>
+        <span><i style="background:#fee2e2"></i>Pior semana</span>
+        <span>Resultado em destaque, meta abaixo</span>
+      </div>
+      <div id="tabela"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CFG = window.AGENDA_CONFIG || {};
+const db = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+
+const $ = s => document.querySelector(s);
+const pad = n => String(n).padStart(2,'0');
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+
+function esc(s){
+  return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function num(n){
+  const v = Number(n || 0);
+  return v.toLocaleString('pt-BR', { minimumFractionDigits:0, maximumFractionDigits:2 });
+}
+
+let estado = {
+  usuario: null,
+  ehAdmin: false,
+  profissionais: [],
+  metricas: [],
+  resultados: [],
+  setor: '',
+  colaborador: '',
+  mes: new Date().getMonth() + 1,
+  ano: new Date().getFullYear()
+};
+
+function isoMes(){
+  return estado.ano + '-' + pad(estado.mes) + '-01';
+}
+function nomeMes(){
+  return MESES[estado.mes - 1] + '/' + estado.ano;
+}
+
+/* ================= LOGIN ================= */
+$('#formLogin').addEventListener('submit', async e => {
+  e.preventDefault();
+  const erro = $('#erroLogin');
+  erro.textContent = '';
+  const { data, error } = await db.rpc('login_usuario', {
+    p_usuario: $('#inUsuario').value.trim(),
+    p_senha: $('#inSenha').value
+  });
+  if (error){ erro.textContent = 'Erro ao conectar: ' + error.message; return; }
+  if (!data || data.length === 0){ erro.textContent = 'Usuário ou senha inválidos.'; return; }
+  estado.usuario = data[0];
+  try {
+    const { data: perfilData } = await db.from('usuarios').select('perfil').eq('id', data[0].id).single();
+    if (perfilData && perfilData.perfil) estado.usuario.perfil = perfilData.perfil;
+  } catch(e) {}
+  estado.ehAdmin = (estado.usuario.perfil === 'admin');
+  sessionStorage.setItem('agenda_user', JSON.stringify(estado.usuario));
+  entrarNoApp();
+});
+
+$('#btnSair').addEventListener('click', () => {
+  sessionStorage.removeItem('agenda_user');
+  estado.usuario = null;
+  estado.ehAdmin = false;
+  $('#app').style.display = 'none';
+  $('#telaLogin').style.display = 'flex';
+  $('#inSenha').value = '';
+});
+
+function entrarNoApp(){
+  $('#telaLogin').style.display = 'none';
+  $('#app').style.display = 'flex';
+  const nome = estado.usuario.nome || estado.usuario.usuario || '—';
+  $('#nomeUser').textContent = nome;
+  $('#avatarUser').textContent = nome.charAt(0).toUpperCase();
+  if (estado.ehAdmin){
+    $('#badgeAdmin').style.display = 'inline-block';
+    $('#boxSetor').style.display = 'block';
+    $('#boxColab').style.display = 'block';
+    $('#btnNovaMetrica').style.display = 'inline-block';
+  } else {
+    $('#painelLancar').style.display = 'block';
+  }
+  montarFiltrosAno();
+  $('#fMes').innerHTML = MESES.map((m, i) => `<option value="${i+1}" ${i+1===estado.mes?'selected':''}>${m}</option>`).join('');
+  carregarTudo();
+}
+
+function montarFiltrosAno(){
+  const atual = new Date().getFullYear();
+  let html = '';
+  for (let a = atual - 2; a <= atual + 1; a++){
+    html += `<option value="${a}" ${a===estado.ano?'selected':''}>${a}</option>`;
+  }
+  $('#fAno').innerHTML = html;
+}
+
+/* ================= CARREGAMENTO ================= */
+async function carregarTudo(){
+  try { await carregarProfissionais(); } catch(e){ console.error('profissionais', e); }
+  try { await carregarMetricas(); } catch(e){ console.error('metricas', e); }
+  try { await carregarResultados(); } catch(e){ console.error('resultados', e); }
+  try { renderTudo(); } catch(e){ console.error('render', e); }
+}
+
+async function carregarProfissionais(){
+  const { data, error } = await db.from('profissionais').select('*').eq('ativo', true).order('nome');
+  if (error){ console.error(error); return; }
+  const todos = data || [];
+  if (estado.ehAdmin){
+    estado.profissionais = todos;
+  } else {
+    const meu = norm(estado.usuario.nome);
+    estado.profissionais = todos.filter(p => norm(p.nome) === meu);
+    if (estado.profissionais.length === 0){
+      const login = norm(estado.usuario.usuario);
+      estado.profissionais = todos.filter(p => norm(p.nome) === login);
+    }
+  }
+}
+
+async function carregarMetricas(){
+  const { data, error } = await db.from('metricas').select('*').eq('ativo', true).order('ordem');
+  if (error){ console.error(error); return; }
+  estado.metricas = data || [];
+}
+
+async function carregarResultados(){
+  const { data, error } = await db.from('metas_resultados').select('*').eq('mes', isoMes());
+  if (error){ console.error(error); return; }
+  estado.resultados = data || [];
+}
+
+/* ================= ESCOPO E CÁLCULOS ================= */
+function profissionaisEscopo(){
+  if (!estado.ehAdmin) return estado.profissionais;
+  if (estado.colaborador){
+    const p = estado.profissionais.find(x => x.id === estado.colaborador);
+    return p ? [p] : [];
+  }
+  if (estado.setor) return estado.profissionais.filter(p => p.setor === estado.setor);
+  return estado.profissionais;
+}
+
+function metricasVisiveis(){
+  if (estado.ehAdmin) return estado.metricas;
+  const setores = new Set(estado.profissionais.map(p => p.setor).filter(Boolean));
+  return estado.metricas.filter(m => !m.setor || setores.has(m.setor));
+}
+
+function agregar(metricaId){
+  const ids = profissionaisEscopo().map(p => p.id);
+  const semanas = [];
+  for (let s = 1; s <= 5; s++){
+    let meta = 0, res = 0;
+    estado.resultados.forEach(r => {
+      if (r.metrica_id !== metricaId || r.semana !== s) return;
+      if (ids.indexOf(r.profissional_id) === -1) return;
+      meta += Number(r.meta || 0);
+      res += Number(r.resultado || 0);
+    });
+    semanas.push({ meta, res });
+  }
+  const totalMeta = semanas.reduce((a, b) => a + b.meta, 0);
+  const totalRes = semanas.reduce((a, b) => a + b.res, 0);
+  return { semanas, totalMeta, totalRes };
+}
+
+/* ================= RENDER ================= */
+function renderTudo(){
+  const escopo = profissionaisEscopo();
+  const nomeEscopo = estado.colaborador
+    ? (escopo[0] ? escopo[0].nome : '—')
+    : (estado.setor || (estado.ehAdmin ? 'Todos os setores' : (escopo[0] ? escopo[0].setor || 'Geral' : '—')));
+  $('#tituloTabela').textContent = 'Dashboard de Reunião — ' + nomeEscopo + ' — ' + nomeMes();
+  montarFiltrosSetor();
+  montarFiltrosColab();
+  renderSelectLancar();
+  renderKpis();
+  renderTabela();
+}
+
+function montarFiltrosSetor(){
+  if (!estado.ehAdmin) return;
+  const setores = [...new Set(estado.profissionais.map(p => p.setor).filter(Boolean))].sort();
+  $('#fSetor').innerHTML = '<option value="">Todos</option>' +
+    setores.map(s => `<option value="${esc(s)}" ${s===estado.setor?'selected':''}>${esc(s)}</option>`).join('');
+}
+
+function montarFiltrosColab(){
+  if (!estado.ehAdmin) return;
+  const lista = estado.setor
+    ? estado.profissionais.filter(p => p.setor === estado.setor)
+    : estado.profissionais;
+  $('#fColab').innerHTML = '<option value="">Todos</option>' +
+    lista.map(p => `<option value="${p.id}" ${p.id===estado.colaborador?'selected':''}>${esc(p.nome)}</option>`).join('');
+}
+
+function renderSelectLancar(){
+  const escopo = estado.ehAdmin ? estado.profissionais : estado.profissionais;
+  const sel = $('#cProf');
+  const antes = sel.value;
+  sel.innerHTML = escopo.map(p => `<option value="${p.id}">${esc(p.nome)}${p.setor ? ' — ' + esc(p.setor) : ''}</option>`).join('');
+  if (antes && escopo.some(p => p.id === antes)) sel.value = antes;
+  sel.disabled = !estado.ehAdmin;
+
+  const sm = $('#cMetrica');
+  const ant = sm.value;
+  const visiveis = metricasVisiveis();
+  if (visiveis.length === 0){
+    sm.innerHTML = '<option value="">Nenhum indicador cadastrado</option>';
+  } else {
+    sm.innerHTML = visiveis.map(m => `<option value="${m.id}">${esc(m.grupo)} · ${esc(m.nome)}</option>`).join('');
+    if (ant && visiveis.some(m => m.id === ant)) sm.value = ant;
+  }
+}
+
+function renderKpis(){
+  const visiveis = metricasVisiveis();
+  let tm = 0, tr = 0;
+  visiveis.forEach(m => {
+    const a = agregar(m.id);
+    tm += a.totalMeta;
+    tr += a.totalRes;
+  });
+  const perc = tm > 0 ? Math.round((tr / tm) * 100) : 0;
+  const escopo = profissionaisEscopo();
+  const classe = perc >= 100 ? 'ok' : '';
+  $('#kpis').innerHTML = `
+    <div class="kpi"><div class="l">Meta do mês</div><div class="v">${num(tm)}</div><div class="s">${visiveis.length} indicador(es)</div></div>
+    <div class="kpi"><div class="l">Resultado do mês</div><div class="v">${num(tr)}</div><div class="s">soma das 5 semanas</div></div>
+    <div class="kpi"><div class="l">Atingimento</div><div class="v">${perc}%</div><div class="s">resultado ÷ meta</div></div>
+    <div class="kpi"><div class="l">Colaborador(es)</div><div class="v">${escopo.length}</div><div class="s">${estado.ehAdmin ? 'no escopo atual' : 'seu perfil'}</div></div>
+  `;
+}
+
+function renderTabela(){
+  const box = $('#tabela');
+  const visiveis = metricasVisiveis();
+  if (visiveis.length === 0){
+    box.innerHTML = '<div class="vazio">Nenhum indicador cadastrado. Peça ao administrador para criar os indicadores.</div>';
+    return;
+  }
+  const grupos = {};
+  const ordemGrupos = [];
+  visiveis.forEach(m => {
+    const g = m.grupo || 'Geral';
+    if (!grupos[g]){ grupos[g] = []; ordemGrupos.push(g); }
+    grupos[g].push(m);
+  });
+
+  let html = '<table><thead><tr><th class="ind">Indicador</th>';
+  for (let s = 1; s <= 5; s++) html += `<th>Semana ${s}</th>`;
+  html += '<th>Total / Mês</th></tr></thead><tbody>';
+
+  ordemGrupos.forEach(g => {
+    html += `<tr class="grupo"><td colspan="7">📁 ${esc(g)}</td></tr>`;
+    grupos[g].forEach(m => {
+      const a = agregar(m.id);
+      const vals = a.semanas.map(x => x.res);
+      const comValor = vals.filter(v => v > 0);
+      let idxMelhor = -1, idxPior = -1;
+      if (comValor.length > 1){
+        const max = Math.max.apply(null, vals);
+        const min = Math.min.apply(null, comValor);
+        if (max !== min){
+          idxMelhor = vals.indexOf(max);
+          idxPior = vals.indexOf(min);
+        }
+      }
+      html += `<tr><td class="ind"><b>${esc(m.nome)}</b> <span class="mta">(${esc(m.unidade || 'qtd')})</span></td>`;
+      a.semanas.forEach((x, i) => {
+        const cls = i === idxMelhor ? 'melhor' : (i === idxPior ? 'pior' : '');
+        const temDado = x.meta > 0 || x.res > 0;
+        html += `<td class="${cls}">` + (temDado
+          ? `<div class="res">${num(x.res)}</div><div class="mta">meta ${num(x.meta)}</div>`
+          : '<span class="mta">—</span>') + '</td>';
+      });
+      const perc = a.totalMeta > 0 ? Math.round((a.totalRes / a.totalMeta) * 100) : null;
+      const clsP = perc === null ? '' : (perc >= 100 ? 'ok' : 'ruim');
+      html += `<td><div class="res">${num(a.totalRes)}</div><div class="mta">meta ${num(a.totalMeta)}</div>` +
+        (perc !== null ? `<div class="pct ${clsP}">${perc}%</div>` : '') + '</td>';
+      html += '</tr>';
+    });
+  });
+
+  html += '</tbody></table>';
+  box.innerHTML = html;
+}
+
+/* ================= AÇÕES ================= */
+$('#btnSalvar').onclick = async () => {
+  const profId = $('#cProf').value;
+  const metricaId = $('#cMetrica').value;
+  if (!profId){ alert('Selecione o colaborador.'); return; }
+  if (!metricaId){ alert('Selecione o indicador.'); return; }
+  const semana = Number($('#cSemana').value);
+  const meta = Number($('#cMeta').value || 0);
+  const resultado = Number($('#cResultado').value || 0);
+  const quem = estado.usuario.nome || estado.usuario.usuario;
+  const agora = new Date().toISOString();
+
+  const payload = {
+    profissional_id: profId,
+    metrica_id: metricaId,
+    mes: isoMes(),
+    semana,
+    meta,
+    resultado,
+    observacoes: $('#cObs').value.trim() || null,
+    alterado_por: quem,
+    alterado_em: agora,
+    criado_por: quem,
+    criado_em: agora
+  };
+
+  const { error } = await db.from('metas_resultados')
+    .upsert(payload, { onConflict: 'profissional_id,metrica_id,mes,semana' });
+
+  if (error){ alert('Erro ao salvar: ' + error.message); return; }
+  await carregarResultados();
+  renderTudo();
+  $('#cMeta').value = '';
+  $('#cResultado').value = '';
+  $('#cObs').value = '';
+  alert('Semana ' + semana + ' salva.');
+};
+
+$('#btnLimpar').onclick = () => {
+  $('#cMeta').value = '';
+  $('#cResultado').value = '';
+  $('#cObs').value = '';
+};
+
+$('#btnNovaMetrica').onclick = async () => {
+  const nome = prompt('Nome do indicador (ex.: Leads por Indicações):');
+  if (!nome) return;
+  const grupo = prompt('Grupo (ex.: Atendimento & Indicações):') || 'Geral';
+  const setor = prompt('Setor (deixe vazio para todos os setores):') || null;
+  const { error } = await db.from('metricas').insert({
+    nome: nome.trim(),
+    grupo: grupo.trim(),
+    setor: setor ? setor.trim() : null,
+    unidade: 'qtd',
+    ordem: (estado.metricas.length + 1),
+    criado_por: estado.usuario.nome || estado.usuario.usuario
+  });
+  if (error){ alert('Erro ao criar indicador: ' + error.message); return; }
+  await carregarMetricas();
+  renderTudo();
+  alert('Indicador criado.');
+};
+
+$('#fSetor').onchange = e => {
+  estado.setor = e.target.value;
+  estado.colaborador = '';
+  renderTudo();
+};
+$('#fColab').onchange = e => {
+  estado.colaborador = e.target.value;
+  renderTudo();
+};
+$('#btnCarregar').onclick = async () => {
+  estado.mes = Number($('#fMes').value);
+  estado.ano = Number($('#fAno').value);
+  await carregarTudo();
+};
+$('#btnAtualizar').onclick = () => carregarTudo();
+$('#btnPdf').onclick = () => window.print();
+
+(function init(){
+  const salvo = sessionStorage.getItem('agenda_user');
+  if (salvo){
+    try {
+      estado.usuario = JSON.parse(salvo);
+      estado.ehAdmin = (estado.usuario.perfil === 'admin');
+      entrarNoApp();
+      return;
+    } catch(e){}
+  }
+  $('#telaLogin').style.display = 'flex';
+})();
+</script>
+</body>
+</html>
