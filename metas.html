@@ -74,7 +74,7 @@
   .meta-fixa{background:#f9fafb;border:1px solid var(--borda);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--txt);display:flex;align-items:center;justify-content:space-between;gap:8px}
   .meta-fixa b{font-size:15px}
   .meta-fixa .rot{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
-  .btn-meta-mini{font-size:11px;font-weight:700;color:var(--laranja-esc);background:#fff7ed;border:1px solid #fed7aa;border-radius:5px;padding:3px 7px}
+  .btn-meta-mini{font-size:11px;font-weight:700;color:var(--laranja-esc);background:#fff7ed;border:1px solid #fed7aa;border-radius:5px;padding:3px 7px;margin-left:5px}
   .btn-meta-mini:hover{background:#ffedd5}
   @media print{
     @page{size:A4 landscape;margin:8mm}
@@ -148,13 +148,13 @@
           <select id="cMetrica"></select>
         </div>
         <div class="campo" id="boxMeta" style="display:none">
-          <label>Meta do mês (admin)</label>
+          <label>Meta do mês do indicador</label>
           <input id="cMeta" type="number" step="0.01" min="0" placeholder="0">
         </div>
         <div class="campo" id="boxMetaFixa" style="display:none">
           <label>Meta do mês</label>
           <div class="meta-fixa">
-            <span class="rot">Definida pelo admin</span>
+            <span class="rot">Meta do indicador</span>
             <b id="metaFixaValor">—</b>
           </div>
         </div>
@@ -191,7 +191,7 @@
       <div class="legenda">
         <span><i style="background:#dcfce7"></i>Melhor semana</span>
         <span><i style="background:#fee2e2"></i>Pior semana</span>
-        <span>A meta vale para o mês inteiro</span>
+        <span>A meta pertence ao indicador e vale para o mês inteiro</span>
       </div>
       <div id="tabela"></div>
     </div>
@@ -220,7 +220,6 @@ let estado = {
   ehAdmin: false,
   profissionais: [],
   metricas: [],
-  metas: [],
   resultados: [],
   setor: '',
   colaborador: '',
@@ -297,7 +296,7 @@ function entrarNoApp(){
     $('#btnNovaMetrica').style.display = 'inline-block';
     $('#boxMeta').style.display = 'block';
     $('#boxMetaFixa').style.display = 'none';
-    $('#tituloLancar').textContent = 'Definir meta e lançar resultado';
+    $('#tituloLancar').textContent = 'Definir meta do indicador e lançar resultado';
   } else {
     $('#boxMeta').style.display = 'none';
     $('#boxMetaFixa').style.display = 'block';
@@ -322,7 +321,6 @@ function montarFiltrosAno(){
 async function carregarTudo(){
   try { await carregarProfissionais(); } catch(e){ console.error('profissionais', e); }
   try { await carregarMetricas(); } catch(e){ console.error('metricas', e); }
-  try { await carregarMetas(); } catch(e){ console.error('metas', e); }
   try { await carregarResultados(); } catch(e){ console.error('resultados', e); }
   try { renderTudo(); } catch(e){ console.error('render', e); }
 }
@@ -347,12 +345,6 @@ async function carregarMetricas(){
   const { data, error } = await db.from('metricas').select('*').eq('ativo', true).order('ordem');
   if (error){ console.error(error); return; }
   estado.metricas = data || [];
-}
-
-async function carregarMetas(){
-  const { data, error } = await db.from('metas_mensais').select('*').eq('mes', isoMes());
-  if (error){ console.error(error); return; }
-  estado.metas = data || [];
 }
 
 async function carregarResultados(){
@@ -398,23 +390,14 @@ function colaboradoresDoEscopo(){
   return estado.profissionais;
 }
 
-/* ================= METAS E CÁLCULOS ================= */
-function metaDoIndicador(profId, metricaId){
-  const m = estado.metas.find(x =>
-    x.profissional_id === profId && x.metrica_id === metricaId
-  );
-  return m ? Number(m.meta || 0) : 0;
+/* ================= META E CÁLCULOS ================= */
+function acharMetrica(metricaId){
+  return estado.metricas.find(m => m.id === metricaId) || null;
 }
 
-function metaTotalIndicador(metricaId){
-  const ids = profissionaisEscopo().map(p => p.id);
-  let total = 0;
-  estado.metas.forEach(m => {
-    if (m.metrica_id !== metricaId) return;
-    if (ids.indexOf(m.profissional_id) === -1) return;
-    total += Number(m.meta || 0);
-  });
-  return total;
+function metaDoIndicador(metricaId){
+  const m = acharMetrica(metricaId);
+  return m ? Number(m.meta_mes || 0) : 0;
 }
 
 function profissionaisEscopo(){
@@ -448,8 +431,10 @@ function agregar(metricaId){
     semanas.push({ res });
   }
   const totalRes = semanas.reduce((a, b) => a + b.res, 0);
-  const meta = metaTotalIndicador(metricaId);
-  return { semanas, totalRes, meta };
+  const metaUnitaria = metaDoIndicador(metricaId);
+  const qtdColaboradores = ids.length;
+  const metaTotal = metaUnitaria * qtdColaboradores;
+  return { semanas, totalRes, metaUnitaria, metaTotal, qtdColaboradores };
 }
 
 /* ================= RENDER ================= */
@@ -520,7 +505,7 @@ function atualizarCampos(){
   const metricaId = $('#cMetrica').value;
   if (!profId || !metricaId) return;
 
-  const meta = metaDoIndicador(profId, metricaId);
+  const meta = metaDoIndicador(metricaId);
   if (estado.ehAdmin){
     $('#cMeta').value = meta ? meta : '';
   } else {
@@ -538,7 +523,7 @@ function renderKpis(){
   let tm = 0, tr = 0;
   visiveis.forEach(m => {
     const a = agregar(m.id);
-    tm += a.meta;
+    tm += a.metaTotal;
     tr += a.totalRes;
   });
   const perc = tm > 0 ? Math.round((tr / tm) * 100) : 0;
@@ -586,16 +571,22 @@ function renderTabela(){
         }
       }
       html += `<tr><td class="ind"><b>${esc(m.nome)}</b> <span class="mta">(${esc(m.unidade || 'qtd')})</span></td>`;
-      html += `<td class="metacol">${a.meta ? num(a.meta) : '—'}</td>`;
+      const extra = a.qtdColaboradores > 1
+        ? `<div class="mta">${num(a.metaUnitaria)} × ${a.qtdColaboradores}</div>`
+        : '';
+      const botao = estado.ehAdmin
+        ? `<button class="btn-meta-mini" data-meta="${m.id}" title="Editar meta do indicador">editar</button>`
+        : '';
+      html += `<td class="metacol">` + (a.metaUnitaria ? num(a.metaUnitaria) : '—') + extra + botao + '</td>';
       a.semanas.forEach((x, i) => {
         const cls = i === idxMelhor ? 'melhor' : (i === idxPior ? 'pior' : '');
         html += `<td class="${cls}">` + (x.res > 0
           ? `<div class="res">${num(x.res)}</div>`
           : '<span class="mta">—</span>') + '</td>';
       });
-      const perc = a.meta > 0 ? Math.round((a.totalRes / a.meta) * 100) : null;
-      html += `<td><div class="res">${num(a.totalRes)}</div></td>`;
+      const perc = a.metaTotal > 0 ? Math.round((a.totalRes / a.metaTotal) * 100) : null;
       const clsP = perc === null ? '' : (perc >= 100 ? 'ok' : 'ruim');
+      html += `<td><div class="res">${num(a.totalRes)}</div></td>`;
       html += `<td>${perc !== null ? `<span class="pct ${clsP}">${perc}%</span>` : '<span class="mta">—</span>'}</td>`;
       html += '</tr>';
     });
@@ -603,9 +594,38 @@ function renderTabela(){
 
   html += '</tbody></table>';
   box.innerHTML = html;
+
+  box.querySelectorAll('[data-meta]').forEach(b => {
+    b.onclick = () => editarMetaIndicador(b.dataset.meta);
+  });
 }
 
 /* ================= AÇÕES ================= */
+async function salvarMetaIndicador(metricaId, valor){
+  const m = acharMetrica(metricaId);
+  if (!m) return false;
+  const { error } = await db.from('metricas')
+    .update({ meta_mes: valor })
+    .eq('id', metricaId);
+  if (error){ alert('Erro ao salvar meta: ' + error.message); return false; }
+  m.meta_mes = valor;
+  return true;
+}
+
+async function editarMetaIndicador(metricaId){
+  const m = acharMetrica(metricaId);
+  if (!m) return;
+  const atual = Number(m.meta_mes || 0);
+  const txt = prompt('Meta do mês para "' + m.nome + '" (setor ' + (m.setor || '—') + '):', atual || '');
+  if (txt === null) return;
+  const valor = Number(String(txt).replace(',', '.'));
+  if (isNaN(valor) || valor < 0){ alert('Valor inválido.'); return; }
+  const ok = await salvarMetaIndicador(metricaId, valor);
+  if (!ok) return;
+  renderTudo();
+  atualizarCampos();
+}
+
 $('#btnSalvar').onclick = async () => {
   const profId = $('#cProf').value;
   const metricaId = $('#cMetrica').value;
@@ -617,28 +637,18 @@ $('#btnSalvar').onclick = async () => {
   const quem = estado.usuario.nome || estado.usuario.usuario;
   const agora = new Date().toISOString();
 
-  // A meta é ÚNICA por indicador e colaborador no mês: só o admin grava (upsert) em metas_mensais.
   if (estado.ehAdmin){
     const meta = Number($('#cMeta').value || 0);
-    const { error: erroMeta } = await db.from('metas_mensais').upsert({
-      profissional_id: profId,
-      metrica_id: metricaId,
-      mes: isoMes(),
-      meta,
-      alterado_por: quem,
-      alterado_em: agora,
-      criado_por: quem,
-      criado_em: agora
-    }, { onConflict: 'profissional_id,metrica_id,mes' });
-    if (erroMeta){ alert('Erro ao salvar meta: ' + erroMeta.message); return; }
+    const ok = await salvarMetaIndicador(metricaId, meta);
+    if (!ok) return;
   }
 
-  // O colaborador só lança o resultado da semana. metas_resultados NÃO guarda meta.
   const { error } = await db.from('metas_resultados').upsert({
     profissional_id: profId,
     metrica_id: metricaId,
     mes: isoMes(),
     semana,
+    meta: 0,
     resultado,
     observacoes: $('#cObs').value.trim() || null,
     alterado_por: quem,
@@ -648,7 +658,7 @@ $('#btnSalvar').onclick = async () => {
   }, { onConflict: 'profissional_id,metrica_id,mes,semana' });
 
   if (error){ alert('Erro ao salvar resultado: ' + error.message); return; }
-  await carregarMetas();
+  await carregarMetricas();
   await carregarResultados();
   renderTudo();
   atualizarCampos();
@@ -667,18 +677,23 @@ $('#btnNovaMetrica').onclick = async () => {
   if (!nome) return;
   const grupo = prompt('Grupo do indicador (ex.: Atendimento & Indicações):') || 'Geral';
   const setor = prompt(
-    'Setor do indicador. Obrigatório — o indicador só aparece para este setor.\n\n' +
+    'Setor do indicador. Obrigatório — só aparece para este setor.\n\n' +
     (setores.length ? 'Setores existentes:\n' + setores.map((s, i) => (i+1) + '. ' + s).join('\n') + '\n\n' : '') +
     'Digite o nome do setor:',
     sugestao
   );
   if (!setor || !setor.trim()){ alert('O setor é obrigatório para vincular o indicador.'); return; }
+  const metaTxt = prompt('Meta do mês para este indicador:', '0');
+  if (metaTxt === null) return;
+  const metaValor = Number(String(metaTxt || '0').replace(',', '.'));
+  if (isNaN(metaValor) || metaValor < 0){ alert('Meta inválida.'); return; }
 
   const { error } = await db.from('metricas').insert({
     nome: nome.trim(),
     grupo: grupo.trim(),
     setor: setor.trim(),
     unidade: 'qtd',
+    meta_mes: metaValor,
     ordem: (estado.metricas.length + 1),
     criado_por: estado.usuario.nome || estado.usuario.usuario
   });
