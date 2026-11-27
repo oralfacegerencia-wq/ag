@@ -41,7 +41,7 @@
   .wrap{max-width:1280px;margin:0 auto;padding:16px;width:100%}
   .barra{background:#fff;border:1px solid var(--borda);border-radius:12px;padding:12px 14px;display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:14px}
   .barra .campo{margin:0}
-  .barra .campo select,.barra .campo input{padding:8px 10px;min-width:120px}
+  .barra .campo select,.barra .campo input{padding:8px 10px;min-width:110px}
   .btn-cinza{padding:9px 14px;border:1px solid var(--borda);border-radius:8px;color:var(--txt);background:#fff}
   .btn-cinza:hover{background:var(--bg)}
   .btn-conf{padding:9px 16px;background:var(--laranja);color:#fff;border-radius:8px;font-weight:600}
@@ -61,10 +61,10 @@
   td.metacol{background:#f9fafb;font-weight:700}
   tr.grupo td{background:#eff6ff;color:#1e40af;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em;text-align:left}
   td .res{font-weight:700;font-size:13px}
-  td .mta{font-size:10px;color:var(--txt2)}
+  td .mta{font-size:10px;color:var(--txt2);font-weight:400}
   td.melhor{background:#dcfce7}
   td.pior{background:#fee2e2}
-  td .pct{display:inline-block;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#fff7ed;color:var(--laranja-esc);border:1px solid #fed7aa;margin-top:2px}
+  td .pct{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;background:#fff7ed;color:var(--laranja-esc);border:1px solid #fed7aa}
   td .pct.ok{background:#dcfce7;color:#15803d;border-color:#bbf7d0}
   td .pct.ruim{background:#fee2e2;color:#b91c1c;border-color:#fecaca}
   .legenda{display:flex;gap:14px;font-size:11px;color:var(--txt2);margin-bottom:9px;flex-wrap:wrap}
@@ -130,6 +130,13 @@
         <label>Ano</label>
         <select id="fAno"></select>
       </div>
+      <div class="campo">
+        <label>Semanas no mês</label>
+        <select id="fSemanas">
+          <option value="4">4 semanas</option>
+          <option value="5">5 semanas</option>
+        </select>
+      </div>
       <button class="btn-conf" id="btnCarregar">Carregar</button>
       <button class="btn-cinza" id="btnAtualizar" title="Recarregar dados">Atualizar</button>
       <button class="btn-cinza" id="btnPdf" title="Imprimir ou salvar em PDF">PDF</button>
@@ -191,7 +198,7 @@
       <div class="legenda">
         <span><i style="background:#dcfce7"></i>Melhor semana</span>
         <span><i style="background:#fee2e2"></i>Pior semana</span>
-        <span>A meta pertence ao indicador e vale para o mês inteiro</span>
+        <span>A meta do mês é dividida pela quantidade de semanas</span>
       </div>
       <div id="tabela"></div>
     </div>
@@ -224,7 +231,8 @@ let estado = {
   setor: '',
   colaborador: '',
   mes: new Date().getMonth() + 1,
-  ano: new Date().getFullYear()
+  ano: new Date().getFullYear(),
+  semanas: 4
 };
 
 function isoMes(){
@@ -305,6 +313,7 @@ function entrarNoApp(){
 
   montarFiltrosAno();
   $('#fMes').innerHTML = MESES.map((m, i) => `<option value="${i+1}" ${i+1===estado.mes?'selected':''}>${m}</option>`).join('');
+  $('#fSemanas').value = String(estado.semanas);
   carregarTudo();
 }
 
@@ -431,10 +440,11 @@ function agregar(metricaId){
     semanas.push({ res });
   }
   const totalRes = semanas.reduce((a, b) => a + b.res, 0);
-  const metaUnitaria = metaDoIndicador(metricaId);
-  const qtdColaboradores = ids.length;
-  const metaTotal = metaUnitaria * qtdColaboradores;
-  return { semanas, totalRes, metaUnitaria, metaTotal, qtdColaboradores };
+  const meta = metaDoIndicador(metricaId);
+  const divisor = estado.semanas > 0 ? estado.semanas : 1;
+  const metaSemana = meta / divisor;
+  const perc = meta > 0 ? Math.round((totalRes / meta) * 100) : null;
+  return { semanas, totalRes, meta, metaSemana, perc };
 }
 
 /* ================= RENDER ================= */
@@ -523,16 +533,17 @@ function renderKpis(){
   let tm = 0, tr = 0;
   visiveis.forEach(m => {
     const a = agregar(m.id);
-    tm += a.metaTotal;
+    tm += a.meta;
     tr += a.totalRes;
   });
   const perc = tm > 0 ? Math.round((tr / tm) * 100) : 0;
   const escopo = profissionaisEscopo();
+  const metaSemanaTotal = estado.semanas > 0 ? tm / estado.semanas : 0;
   $('#kpis').innerHTML = `
     <div class="kpi"><div class="l">Meta do mês</div><div class="v">${num(tm)}</div><div class="s">${visiveis.length} indicador(es)</div></div>
+    <div class="kpi"><div class="l">Meta por semana</div><div class="v">${num(metaSemanaTotal)}</div><div class="s">meta ÷ ${estado.semanas} semanas</div></div>
     <div class="kpi"><div class="l">Resultado acumulado</div><div class="v">${num(tr)}</div><div class="s">soma das semanas</div></div>
-    <div class="kpi"><div class="l">Atingimento</div><div class="v">${perc}%</div><div class="s">resultado ÷ meta</div></div>
-    <div class="kpi"><div class="l">Colaborador(es)</div><div class="v">${escopo.length}</div><div class="s">${estado.ehAdmin ? 'no escopo atual' : 'seu perfil'}</div></div>
+    <div class="kpi"><div class="l">Atingimento</div><div class="v">${perc}%</div><div class="s">resultado ÷ meta do mês</div></div>
   `;
 }
 
@@ -571,23 +582,20 @@ function renderTabela(){
         }
       }
       html += `<tr><td class="ind"><b>${esc(m.nome)}</b> <span class="mta">(${esc(m.unidade || 'qtd')})</span></td>`;
-      const extra = a.qtdColaboradores > 1
-        ? `<div class="mta">${num(a.metaUnitaria)} × ${a.qtdColaboradores}</div>`
-        : '';
       const botao = estado.ehAdmin
         ? `<button class="btn-meta-mini" data-meta="${m.id}" title="Editar meta do indicador">editar</button>`
         : '';
-      html += `<td class="metacol">` + (a.metaUnitaria ? num(a.metaUnitaria) : '—') + extra + botao + '</td>';
+      html += `<td class="metacol">` + (a.meta ? num(a.meta) : '—') +
+        `<div class="mta">semana: ${a.meta ? num(a.metaSemana) : '—'}</div>` + botao + '</td>';
       a.semanas.forEach((x, i) => {
         const cls = i === idxMelhor ? 'melhor' : (i === idxPior ? 'pior' : '');
         html += `<td class="${cls}">` + (x.res > 0
           ? `<div class="res">${num(x.res)}</div>`
           : '<span class="mta">—</span>') + '</td>';
       });
-      const perc = a.metaTotal > 0 ? Math.round((a.totalRes / a.metaTotal) * 100) : null;
-      const clsP = perc === null ? '' : (perc >= 100 ? 'ok' : 'ruim');
+      const clsP = a.perc === null ? '' : (a.perc >= 100 ? 'ok' : 'ruim');
       html += `<td><div class="res">${num(a.totalRes)}</div></td>`;
-      html += `<td>${perc !== null ? `<span class="pct ${clsP}">${perc}%</span>` : '<span class="mta">—</span>'}</td>`;
+      html += `<td>${a.perc !== null ? `<span class="pct ${clsP}">${a.perc}%</span>` : '<span class="mta">—</span>'}</td>`;
       html += '</tr>';
     });
   });
@@ -716,9 +724,14 @@ $('#fColab').onchange = e => {
   estado.colaborador = e.target.value;
   renderTudo();
 };
+$('#fSemanas').onchange = e => {
+  estado.semanas = Number(e.target.value) || 4;
+  renderTudo();
+};
 $('#btnCarregar').onclick = async () => {
   estado.mes = Number($('#fMes').value);
   estado.ano = Number($('#fAno').value);
+  estado.semanas = Number($('#fSemanas').value) || 4;
   await carregarTudo();
 };
 $('#btnAtualizar').onclick = () => carregarTudo();
